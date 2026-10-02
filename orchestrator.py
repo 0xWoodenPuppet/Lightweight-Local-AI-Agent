@@ -20,6 +20,7 @@ from pathlib import Path
 import config
 import llm
 from registry import SKILL_REGISTRY, get_skill_runner, get_skills_prompt_description
+from verification import verify_result
 
 
 ROUTER_SYSTEM_PROMPT = """You are a smart decision-making router for an AI agent.
@@ -204,7 +205,12 @@ def run_pipeline(user_query: str) -> dict:
         except Exception as e:
             final_answer = f"Error during answer synthesis: {e}\nRaw tool output:\n{skill_output}"
 
-    # ── Phase 4: Structured logging ──────────────────────────
+    # ── Phase 4: Deterministic Tool-Grounded Verification ────
+    verification = verify_result(chosen_skill, skill_output, final_answer)
+    status_icon = "✅" if verification["verified"] else "⚠️"
+    print(f"[Verification] {status_icon} Status: {verification['status']} | Reason: {verification['reason']}")
+
+    # ── Phase 5: Structured logging ──────────────────────────
     result_record = {
         "timestamp": timestamp,
         "user_query": user_query,
@@ -213,6 +219,7 @@ def run_pipeline(user_query: str) -> dict:
         "skill_input": skill_input,
         "skill_output": skill_output,
         "final_answer": final_answer,
+        "verification": verification,
     }
 
     append_to_log(result_record)
