@@ -1,35 +1,24 @@
 # main_terminal.py
 # ─────────────────────────────────────────────────────────
-# Step 1: Minimal terminal chat with Ollama.
-# A simple REPL that sends your messages to the model and
-# prints the replies.  No skills, no routing — just chat.
+# Terminal Chat with Agentic Orchestrator
+# Connects the terminal REPL directly to orchestrator.py.
 # ─────────────────────────────────────────────────────────
 
-import llm
+from orchestrator import run_pipeline
 
 
 def main():
-    """Run a simple multi-turn chat loop in the terminal."""
-    print("=== Lightweight Local AI Agent — Terminal Chat ===")
-    print(f"(Type 'quit' or 'exit' to stop)\n")
-
-    # Conversation history — keeps context across turns
-    messages: list[dict] = [
-        {
-            "role": "system",
-            "content": (
-                "You are a helpful AI assistant. "
-                "Answer clearly and concisely."
-            ),
-        }
-    ]
+    """Run an interactive agent session in the terminal."""
+    print("======================================================")
+    print("  Lightweight Local AI Agent — Orchestrator REPL")
+    print("  (Routes queries to python_sandbox, web_search, or none)")
+    print("  Type 'quit' or 'exit' to stop.")
+    print("======================================================\n")
 
     while True:
-        # ── Read user input ──────────────────────────────
         try:
-            user_input = input("You: ").strip()
+            user_input = input("\nYou: ").strip()
         except (KeyboardInterrupt, EOFError):
-            # Ctrl+C or Ctrl+D — exit gracefully
             print("\nGoodbye!")
             break
 
@@ -39,19 +28,14 @@ def main():
             print("Goodbye!")
             break
 
-        # ── Send to Ollama and print the reply ───────────
-        messages.append({"role": "user", "content": user_input})
+        # Run the full agent pipeline
+        result = run_pipeline(user_input)
 
-        try:
-            reply = llm.chat(messages)
-        except ConnectionError as e:
-            print(f"\n[ERROR] {e}\n")
-            messages.pop()  # Remove the failed user message
-            continue
-
-        messages.append({"role": "assistant", "content": reply})
-        print(f"\nAssistant: {reply}\n")
+        print("\n" + "=" * 50)
+        print(f"🤖 Assistant:\n{result['final_answer']}")
+        print("=" * 50)
 
 
 if __name__ == "__main__":
     main()
+
