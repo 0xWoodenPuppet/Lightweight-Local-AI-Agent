@@ -1,0 +1,152 @@
+[
+    {
+        "query": "What is 25 * 45?",
+        "expected_skill": "python",
+        "ground_truth": ["1125"]
+    },
+    {
+        "query": "Calculate the square root of 9801.",
+        "expected_skill": "python",
+        "ground_truth": ["99"]
+    },
+    {
+        "query": "What is the sum of the first 100 positive integers?",
+        "expected_skill": "python",
+        "ground_truth": ["5050"]
+    },
+    {
+        "query": "Find the 10th Fibonacci number (where F(1)=1, F(2)=1).",
+        "expected_skill": "python",
+        "ground_truth": ["55"]
+    },
+    {
+        "query": "What is 2^15?",
+        "expected_skill": "python",
+        "ground_truth": ["32768"]
+    },
+    {
+        "query": "Calculate 15 factorial.",
+        "expected_skill": "python",
+        "ground_truth": ["1307674368000"]
+    },
+    {
+        "query": "What is the factorial of 10?",
+        "expected_skill": "python",
+        "ground_truth": ["3628800"]
+    },
+    {
+        "query": "Evaluate: 1234 * 5678",
+        "expected_skill": "python",
+        "ground_truth": ["7006652"]
+    },
+    {
+        "query": "How many seconds are in a non-leap 365-day year?",
+        "expected_skill": "python",
+        "ground_truth": ["31536000"]
+    },
+    {
+        "query": "What is 100 divided by 8?",
+        "expected_skill": "python",
+        "ground_truth": ["12.5"]
+    },
+    {
+        "query": "Who won the FIFA World Cup in 2022?",
+        "expected_skill": "search",
+        "ground_truth": ["Argentina", "argentina"]
+    },
+    {
+        "query": "What is the capital of Australia?",
+        "expected_skill": "search",
+        "ground_truth": ["Canberra", "canberra"]
+    },
+    {
+        "query": "Who is the CEO of Apple as of 2025?",
+        "expected_skill": "search",
+        "ground_truth": ["Tim Cook", "Cook"]
+    },
+    {
+        "query": "When was Python 3.10 released?",
+        "expected_skill": "search",
+        "ground_truth": ["2021", "October 4, 2021"]
+    },
+    {
+        "query": "What is the average distance from the Earth to the Moon in miles?",
+        "expected_skill": "search",
+        "ground_truth": ["238,855", "238855"]
+    },
+    {
+        "query": "Who wrote the novel 1984?",
+        "expected_skill": "search",
+        "ground_truth": ["George Orwell", "Orwell"]
+    },
+    {
+        "query": "Which country has the largest population in 2024?",
+        "expected_skill": "search",
+        "ground_truth": ["India", "india"]
+    },
+    {
+        "query": "What is the speed of light in vacuum in m/s?",
+        "expected_skill": "search",
+        "ground_truth": ["299792458", "299,792,458"]
+    },
+    {
+        "query": "Who directed the movie Inception?",
+        "expected_skill": "search",
+        "ground_truth": ["Christopher Nolan", "Nolan"]
+    },
+    {
+        "query": "What is the official currency of Japan?",
+        "expected_skill": "search",
+        "ground_truth": ["Yen", "yen"]
+    },
+    {
+        "query": "Hi, how are you today?",
+        "expected_skill": "none",
+        "ground_truth": []
+    },
+    {
+        "query": "Write a short haiku about a robot.",
+        "expected_skill": "none",
+        "ground_truth": []
+    },
+    {
+        "query": "What are your capabilities?",
+        "expected_skill": "none",
+        "ground_truth": []
+    },
+    {
+        "query": "Tell me a joke about programming.",
+        "expected_skill": "none",
+        "ground_truth": []
+    },
+    {
+        "query": "Translate 'hello' to French.",
+        "expected_skill": "none",
+        "ground_truth": ["bonjour", "Bonjour"]
+    },
+    {
+        "query": "Give me 3 tips for learning Python.",
+        "expected_skill": "none",
+        "ground_truth": []
+    },
+    {
+        "query": "What is the meaning of life?",
+        "expected_skill": "none",
+        "ground_truth": []
+    },
+    {
+        "query": "Are you an AI?",
+        "expected_skill": "none",
+        "ground_truth": []
+    },
+    {
+        "query": "Summarize the plot of Cinderella in one sentence.",
+        "expected_skill": "none",
+        "ground_truth": []
+    },
+    {
+        "query": "Say 'Hello World' backwards.",
+        "expected_skill": "none",
+        "ground_truth": ["dlroW olleH", "dlrow olleh"]
+    }
+]
