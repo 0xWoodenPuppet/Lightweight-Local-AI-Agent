@@ -10,14 +10,14 @@ import requests
 import config
 
 
-def chat(messages: list[dict], temperature: float | None = None) -> str:
+def chat(messages: list[dict], temperature: float | None = None) -> tuple[str, dict]:
     """
     Send a list of messages to Ollama and return the assistant's reply.
 
     Each message is a dict with 'role' ('system' | 'user' | 'assistant')
     and 'content' (str).
 
-    Returns the full response text as a single string.
+    Returns a tuple of (response_text, telemetry_dict).
     Raises an exception if the Ollama server is unreachable or errors out.
     """
     url = f"{config.OLLAMA_BASE_URL}/api/chat"
@@ -41,4 +41,9 @@ def chat(messages: list[dict], temperature: float | None = None) -> str:
         )
 
     data = response.json()
-    return data["message"]["content"]
+    telemetry = {
+        "eval_count": data.get("eval_count", 0),
+        "eval_duration": data.get("eval_duration", 0),
+        "total_duration": data.get("total_duration", 0),
+    }
+    return data["message"]["content"], telemetry

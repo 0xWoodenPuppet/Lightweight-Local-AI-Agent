@@ -40,7 +40,7 @@ def evaluate():
         # 1. Run Raw Baseline
         print("[Raw] Generating...")
         try:
-            raw_response = llm.chat([{"role": "user", "content": query}], temperature=0.1)
+            raw_response, raw_telemetry = llm.chat([{"role": "user", "content": query}], temperature=0.1)
         except Exception as e:
             raw_response = f"Error: {e}"
             

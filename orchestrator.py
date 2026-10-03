@@ -31,27 +31,31 @@ Available skills:
 - none: Use when the query is general conversation, greeting, advice, or common knowledge that needs no computation or live data.
 
 CRITICAL INSTRUCTION:
-Your response MUST be exactly ONE line in this format:
-SKILL: <python|search|none> | <input for the skill>
+Your response MUST start with a line in this format:
+SKILL: <python|search|none>
+
+Then, starting on the NEXT line, provide the input for the skill. Do not write anything else before the SKILL line.
 
 Examples:
 User: What is 45 factorial?
-SKILL: python | import math; print(math.factorial(45))
+SKILL: python
+import math
+print(math.factorial(45))
 
 User: Who won the latest football world cup?
-SKILL: search | latest football world cup winner
-
-User: What is the current stock price of Apple?
-SKILL: search | Apple current stock price
+SKILL: search
+latest football world cup winner
 
 User: Hi, who are you?
-SKILL: none | Hello! I am your AI assistant. How can I help you today?
+SKILL: none
+Hello! I am your AI assistant. How can I help you today?
 
 Rules:
-1. Output ONLY the single SKILL: line. No explanation, no extra text.
-2. For 'python', the input must be executable Python code that prints the result.
-3. For 'search', the input must be a search query.
-4. For 'none', the input must be a helpful direct answer.
+1. The first line must be exactly SKILL: <name>.
+2. Everything after the first line is treated as the input.
+3. For 'python', the input must be executable Python code that prints the result.
+4. For 'search', the input must be a search query.
+5. For 'none', the input must be a helpful direct answer.
 """
 
 
@@ -78,24 +82,19 @@ def parse_router_response(raw_reply: str) -> tuple[str, str]:
         return "none", "I am ready to help. What would you like to know?"
 
     # Find the line containing "SKILL:"
-    target_line = ""
-    for line in raw_reply.strip().splitlines():
+    lines = raw_reply.strip().splitlines()
+    skill_choice = "none"
+    skill_input = raw_reply.strip()
+    
+    for i, line in enumerate(lines):
         if "SKILL:" in line.upper():
-            target_line = line.strip()
+            # Regex to capture: SKILL: <name>
+            match = re.match(r"^.*?SKILL:\s*([a-zA-Z0-9_\-]+)", line.strip(), re.IGNORECASE)
+            if match:
+                skill_choice = match.group(1).lower().strip()
+                # The rest of the lines form the input
+                skill_input = "\n".join(lines[i+1:]).strip()
             break
-
-    if not target_line:
-        # Fallback: No SKILL: line found, treat entire raw reply as direct response
-        return "none", raw_reply.strip()
-
-    # Regex to capture: SKILL: <name> | <input>
-    match = re.match(r"^SKILL:\s*([a-zA-Z0-9_\-]+)\s*\|\s*(.*)$", target_line, re.IGNORECASE | re.DOTALL)
-    if not match:
-        # Malformed line -> fallback to none
-        return "none", raw_reply.strip()
-
-    skill_choice = match.group(1).lower().strip()
-    skill_input = match.group(2).strip()
 
     # Check if the skill is known in our registry
     if skill_choice in SKILL_REGISTRY:
@@ -142,7 +141,7 @@ def run_pipeline(user_query: str) -> dict:
 
     try:
         # Lower temperature for deterministic routing
-        router_raw = llm.chat(router_messages, temperature=0.1)
+        router_raw, router_telemetry = llm.chat(router_messages, temperature=0.1)
     except Exception as e:
         print(f"[Agent Error] LLM router call failed: {e}")
         return {
@@ -201,7 +200,7 @@ def run_pipeline(user_query: str) -> dict:
         ]
 
         try:
-            final_answer = llm.chat(synthesis_messages, temperature=0.3)
+            final_answer, synthesis_telemetry = llm.chat(synthesis_messages, temperature=0.3)
         except Exception as e:
             final_answer = f"Error during answer synthesis: {e}\nRaw tool output:\n{skill_output}"
 
@@ -220,6 +219,10 @@ def run_pipeline(user_query: str) -> dict:
         "skill_output": skill_output,
         "final_answer": final_answer,
         "verification": verification,
+        "telemetry": {
+            "router": router_telemetry if 'router_telemetry' in locals() else None,
+            "synthesis": synthesis_telemetry if 'synthesis_telemetry' in locals() else None,
+        }
     }
 
     append_to_log(result_record)
