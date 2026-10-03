@@ -56,8 +56,46 @@ while True:
     assert "timed out" in result_4.lower(), "Failed timeout test"
     print("=> Passed!\n")
 
-    print("🎉 All python_sandbox tests passed successfully!")
+    # 5. Auto-print test (unprinted expression & assignment)
+    print("5. Testing auto-print on bare expression and unprinted assignment...")
+    code_5a = "125 * 8"
+    result_5a = run(code_5a)
+    print("Output 5a:", result_5a)
+    assert "1000" in result_5a, "Failed auto-print on expression"
+
+    code_5b = "computed_val = 50 * 4"
+    result_5b = run(code_5b)
+    print("Output 5b:", result_5b)
+    assert "200" in result_5b, "Failed auto-print on assignment"
+    print("=> Passed!\n")
+
+    # 6. Interactive input() blocking
+    print("6. Testing interactive input() blocking...")
+    code_6 = "name = input('Enter name: ')\nprint(name)"
+    result_6 = run(code_6)
+    print("Output:\n", result_6)
+    assert "interactive" in result_6.lower() or "input()" in result_6, "Failed input() block test"
+    print("=> Passed!\n")
+
+    # 7. Security guardrail blocking dangerous modules
+    print("7. Testing security guardrail blocking dangerous import...")
+    code_7 = "import subprocess\nsubprocess.run(['ls'])"
+    result_7 = run(code_7)
+    print("Output:\n", result_7)
+    assert "security restriction" in result_7.lower() or "blocked" in result_7.lower(), "Failed security guardrail test"
+    print("=> Passed!\n")
+
+    # 8. Auto-imports test
+    print("8. Testing safe auto-imports (math without explicit import)...")
+    code_8 = "math.sqrt(144)"
+    result_8 = run(code_8)
+    print("Output:\n", result_8)
+    assert "12" in result_8, "Failed auto-imports test"
+    print("=> Passed!\n")
+
+    print("🎉 All 8 python_sandbox tests passed successfully!")
 
 
 if __name__ == "__main__":
     test_sandbox()
+
