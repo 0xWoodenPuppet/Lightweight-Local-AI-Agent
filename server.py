@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-import orchestrator
+from agent.orchestrator import run_pipeline
 
 app = FastAPI(title="Lightweight Local AI Agent API")
 
@@ -17,7 +17,7 @@ async def chat_endpoint(req: ChatRequest):
     Returns the final answer along with verification and tool traces.
     """
     try:
-        result = orchestrator.run_pipeline(req.query)
+        result = run_pipeline(req.query)
         return JSONResponse(content=result)
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)

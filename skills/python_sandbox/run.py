@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import sys
 import subprocess
-import config
+from agent import config
 
 
 def run(code: str) -> str:

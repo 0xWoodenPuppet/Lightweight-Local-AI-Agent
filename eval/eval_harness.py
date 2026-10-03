@@ -6,8 +6,8 @@ from pathlib import Path
 # Add parent directory to sys.path so we can import from the main project
 sys.path.append(str(Path(__file__).parent.parent))
 
-from orchestrator import run_pipeline
-import llm
+from agent.orchestrator import run_pipeline
+from agent import llm
 
 def evaluate():
     dataset_path = Path(__file__).parent / "dataset.json"

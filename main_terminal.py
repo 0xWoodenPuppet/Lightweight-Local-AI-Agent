@@ -4,7 +4,7 @@
 # Connects the terminal REPL directly to orchestrator.py.
 # ─────────────────────────────────────────────────────────
 
-from orchestrator import run_pipeline
+from agent.orchestrator import run_pipeline
 
 
 def main():

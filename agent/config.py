@@ -16,5 +16,10 @@ SANDBOX_TIMEOUT_SECONDS = 10           # Max runtime for user code
 # DuckDuckGo keyless search settings
 SEARCH_NUM_RESULTS = 5                 # How many snippets to return
 
+from pathlib import Path
+
+# Project root directory
+BASE_DIR = Path(__file__).resolve().parent.parent
+
 # ── Logging settings ──────────────────────────────────────
-LOG_FILE = "agent_log.jsonl"           # JSONL log file path
+LOG_FILE = str(BASE_DIR / "agent_log.jsonl")           # JSONL log file path

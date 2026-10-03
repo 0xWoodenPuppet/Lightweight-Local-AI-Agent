@@ -11,7 +11,7 @@ from __future__ import annotations
 import re
 import urllib.parse
 import requests
-import config
+from agent import config
 
 try:
     from ddgs import DDGS

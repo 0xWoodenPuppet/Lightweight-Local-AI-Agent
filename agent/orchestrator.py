@@ -17,10 +17,10 @@ import re
 from datetime import datetime
 from pathlib import Path
 
-import config
-import llm
-from registry import SKILL_REGISTRY, get_skill_runner, get_skills_prompt_description
-from verification import verify_result
+from . import config
+from . import llm
+from .registry import SKILL_REGISTRY, get_skill_runner, get_skills_prompt_description
+from .verification import verify_result
 
 
 ROUTER_SYSTEM_PROMPT = """You are a smart decision-making router for an AI agent.

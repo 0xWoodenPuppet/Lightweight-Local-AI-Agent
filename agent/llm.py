@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 import requests
-import config
+from . import config
 
 
 def chat(messages: list[dict], temperature: float | None = None) -> tuple[str, dict]:

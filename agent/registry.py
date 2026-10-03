@@ -14,14 +14,9 @@ from __future__ import annotations
 from typing import Callable
 from pathlib import Path
 
-# Import the run functions from each skill package
-import skills.python_sandbox.run as python_skill
-import skills.web_search.run as search_skill
-
-
 # Load descriptions from skill.md files
 def _load_skill_description(skill_dir: str) -> str:
-    path = Path(__file__).parent / "skills" / skill_dir / "skill.md"
+    path = Path(__file__).resolve().parent.parent / "skills" / skill_dir / "skill.md"
     if path.exists():
         text = path.read_text(encoding="utf-8")
         # Extract 'When to use:' line
@@ -34,21 +29,19 @@ def _load_skill_description(skill_dir: str) -> str:
                 return line.replace("Description:", "").strip()
     return "No description available."
 
+
 # Registry dictionary mapping:
 #   skill_key -> dict with:
 #     - "name": human-friendly name
 #     - "description": one-line summary of what it does and when to use it
-#     - "run": callable function taking (input: str) -> str
 SKILL_REGISTRY: dict[str, dict] = {
     "python": {
         "name": "Python Sandbox",
         "description": _load_skill_description("python_sandbox"),
-        "run": python_skill.run,
     },
     "search": {
         "name": "Web Search",
         "description": _load_skill_description("web_search"),
-        "run": search_skill.run,
     },
 }
 
@@ -58,9 +51,13 @@ def get_skill_runner(skill_name: str) -> Callable[[str], str] | None:
     Look up and return the execution function for a given skill name.
     Returns None if the skill is not found in the registry.
     """
-    skill_entry = SKILL_REGISTRY.get(skill_name.lower().strip())
-    if skill_entry:
-        return skill_entry["run"]
+    key = skill_name.lower().strip()
+    if key == "python":
+        import skills.python_sandbox.run as python_skill
+        return python_skill.run
+    elif key == "search":
+        import skills.web_search.run as search_skill
+        return search_skill.run
     return None
 
 
