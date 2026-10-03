@@ -19,6 +19,21 @@ import skills.python_sandbox.run as python_skill
 import skills.web_search.run as search_skill
 
 
+# Load descriptions from skill.md files
+def _load_skill_description(skill_dir: str) -> str:
+    path = Path(__file__).parent / "skills" / skill_dir / "skill.md"
+    if path.exists():
+        text = path.read_text(encoding="utf-8")
+        # Extract 'When to use:' line
+        for line in text.splitlines():
+            if line.startswith("When to use:"):
+                return line.replace("When to use:", "").strip()
+        # Fallback to description
+        for line in text.splitlines():
+            if line.startswith("Description:"):
+                return line.replace("Description:", "").strip()
+    return "No description available."
+
 # Registry dictionary mapping:
 #   skill_key -> dict with:
 #     - "name": human-friendly name
@@ -27,12 +42,12 @@ import skills.web_search.run as search_skill
 SKILL_REGISTRY: dict[str, dict] = {
     "python": {
         "name": "Python Sandbox",
-        "description": "Executes Python code for math, calculations, algorithms, or data processing. Return code only.",
+        "description": _load_skill_description("python_sandbox"),
         "run": python_skill.run,
     },
     "search": {
         "name": "Web Search",
-        "description": "Searches the web for current events, live facts, news, and external documentation.",
+        "description": _load_skill_description("web_search"),
         "run": search_skill.run,
     },
 }

@@ -1,152 +1,152 @@
 [
     {
-        "query": "What is 25 * 45?",
+        "query": "Calculate 73.19 multiplied by 48.22",
         "expected_skill": "python",
-        "ground_truth": ["1125"]
+        "ground_truth": ["3529.2218"]
     },
     {
-        "query": "Calculate the square root of 9801.",
+        "query": "What is the cube root of 19683?",
         "expected_skill": "python",
-        "ground_truth": ["99"]
+        "ground_truth": ["27"]
     },
     {
-        "query": "What is the sum of the first 100 positive integers?",
+        "query": "Find the 20th Fibonacci number (where F(1)=1, F(2)=1).",
         "expected_skill": "python",
-        "ground_truth": ["5050"]
+        "ground_truth": ["6765"]
     },
     {
-        "query": "Find the 10th Fibonacci number (where F(1)=1, F(2)=1).",
+        "query": "What is the sum of all prime numbers between 50 and 100?",
         "expected_skill": "python",
-        "ground_truth": ["55"]
+        "ground_truth": ["732"]
     },
     {
-        "query": "What is 2^15?",
+        "query": "Calculate 12 factorial divided by 5 factorial.",
         "expected_skill": "python",
-        "ground_truth": ["32768"]
+        "ground_truth": ["3991680"]
     },
     {
-        "query": "Calculate 15 factorial.",
+        "query": "How many hours are there in 5.5 non-leap years?",
         "expected_skill": "python",
-        "ground_truth": ["1307674368000"]
+        "ground_truth": ["48180"]
     },
     {
-        "query": "What is the factorial of 10?",
+        "query": "What is 2^32?",
         "expected_skill": "python",
-        "ground_truth": ["3628800"]
+        "ground_truth": ["4294967296"]
     },
     {
-        "query": "Evaluate: 1234 * 5678",
+        "query": "What is the exact result of 12345678 * 87654321?",
         "expected_skill": "python",
-        "ground_truth": ["7006652"]
+        "ground_truth": ["1082152022374638"]
     },
     {
-        "query": "How many seconds are in a non-leap 365-day year?",
+        "query": "If a person's salary is $85,000 and they get a 4.5% raise followed by a 2% deduction, what is their final salary?",
         "expected_skill": "python",
-        "ground_truth": ["31536000"]
+        "ground_truth": ["87046.5"]
     },
     {
-        "query": "What is 100 divided by 8?",
+        "query": "What is 100 divided by 3 to exactly 5 decimal places?",
         "expected_skill": "python",
-        "ground_truth": ["12.5"]
+        "ground_truth": ["33.33333"]
     },
     {
-        "query": "Who won the FIFA World Cup in 2022?",
+        "query": "Who is the current Prime Minister of the UK as of 2026?",
         "expected_skill": "search",
-        "ground_truth": ["Argentina", "argentina"]
+        "ground_truth": ["Starmer"]
     },
     {
-        "query": "What is the capital of Australia?",
+        "query": "Who won the men's singles at Wimbledon in 2025?",
         "expected_skill": "search",
-        "ground_truth": ["Canberra", "canberra"]
+        "ground_truth": ["Alcaraz"]
     },
     {
-        "query": "Who is the CEO of Apple as of 2025?",
+        "query": "Who won the Nobel Prize in Literature in 2025?",
         "expected_skill": "search",
-        "ground_truth": ["Tim Cook", "Cook"]
+        "ground_truth": ["Thuy"]
     },
     {
-        "query": "When was Python 3.10 released?",
+        "query": "When is the next total solar eclipse visible from North America after 2024?",
         "expected_skill": "search",
-        "ground_truth": ["2021", "October 4, 2021"]
+        "ground_truth": ["2044"]
     },
     {
-        "query": "What is the average distance from the Earth to the Moon in miles?",
+        "query": "Which team won the NBA Finals in 2025?",
         "expected_skill": "search",
-        "ground_truth": ["238,855", "238855"]
+        "ground_truth": ["Nuggets", "Celtics", "Lakers", "Warriors", "Mavericks", "Thunder", "Timberwolves"] 
     },
     {
-        "query": "Who wrote the novel 1984?",
+        "query": "What was the highest grossing movie of 2025?",
         "expected_skill": "search",
-        "ground_truth": ["George Orwell", "Orwell"]
+        "ground_truth": ["Avatar", "Spider-Man", "Jurassic", "Zootopia"]
     },
     {
-        "query": "Which country has the largest population in 2024?",
+        "query": "What happened to Adobe's acquisition of Figma in 2023?",
         "expected_skill": "search",
-        "ground_truth": ["India", "india"]
+        "ground_truth": ["abandoned", "canceled", "cancelled", "called off"]
     },
     {
-        "query": "What is the speed of light in vacuum in m/s?",
+        "query": "What is the exact current population of Tuvalu?",
         "expected_skill": "search",
-        "ground_truth": ["299792458", "299,792,458"]
+        "ground_truth": ["11", "10", "12"]
     },
     {
-        "query": "Who directed the movie Inception?",
+        "query": "What is the current interest rate set by the US Federal Reserve as of late 2025/2026?",
         "expected_skill": "search",
-        "ground_truth": ["Christopher Nolan", "Nolan"]
+        "ground_truth": ["%", "percent"]
     },
     {
-        "query": "What is the official currency of Japan?",
+        "query": "What is the latest stable version of Python?",
         "expected_skill": "search",
-        "ground_truth": ["Yen", "yen"]
+        "ground_truth": ["3.13", "3.14", "3.15"]
     },
     {
-        "query": "Hi, how are you today?",
+        "query": "What is the capital of France?",
         "expected_skill": "none",
         "ground_truth": []
     },
     {
-        "query": "Write a short haiku about a robot.",
+        "query": "Summarize the plot of the Matrix in one sentence.",
         "expected_skill": "none",
         "ground_truth": []
     },
     {
-        "query": "What are your capabilities?",
+        "query": "Write a python function to reverse a string.",
         "expected_skill": "none",
         "ground_truth": []
     },
     {
-        "query": "Tell me a joke about programming.",
+        "query": "Translate 'Good morning' to German.",
+        "expected_skill": "none",
+        "ground_truth": ["Guten Morgen", "guten morgen"]
+    },
+    {
+        "query": "Who was the first president of the United States?",
+        "expected_skill": "none",
+        "ground_truth": ["George Washington", "Washington"]
+    },
+    {
+        "query": "Give me a recipe for chocolate chip cookies.",
         "expected_skill": "none",
         "ground_truth": []
     },
     {
-        "query": "Translate 'hello' to French.",
-        "expected_skill": "none",
-        "ground_truth": ["bonjour", "Bonjour"]
-    },
-    {
-        "query": "Give me 3 tips for learning Python.",
+        "query": "Explain the theory of relativity simply.",
         "expected_skill": "none",
         "ground_truth": []
     },
     {
-        "query": "What is the meaning of life?",
+        "query": "How do I say 'thank you' in Japanese?",
         "expected_skill": "none",
-        "ground_truth": []
+        "ground_truth": ["arigato", "Arigato"]
     },
     {
-        "query": "Are you an AI?",
+        "query": "What is the atomic number of Oxygen?",
         "expected_skill": "none",
-        "ground_truth": []
+        "ground_truth": ["8", "eight"]
     },
     {
-        "query": "Summarize the plot of Cinderella in one sentence.",
+        "query": "What are the primary colors in painting?",
         "expected_skill": "none",
-        "ground_truth": []
-    },
-    {
-        "query": "Say 'Hello World' backwards.",
-        "expected_skill": "none",
-        "ground_truth": ["dlroW olleH", "dlrow olleh"]
+        "ground_truth": ["red, blue, yellow", "red, yellow, blue", "blue, yellow, red", "red, yellow, and blue"]
     }
 ]
