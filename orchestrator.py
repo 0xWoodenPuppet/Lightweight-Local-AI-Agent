@@ -175,6 +175,29 @@ def run_pipeline(user_query: str) -> dict:
             except Exception as e:
                 skill_output = f"[Execution Error] {e}"
             print(f"[Skill Output]\n{skill_output}")
+            
+            # ── Self-Retry Loop (CRITIC) ───────────────────────
+            if chosen_skill == "python" and skill_output and ("[Sandbox Error]" in skill_output or "[STDERR]" in skill_output):
+                print(f"[Agent] Detected error in Python execution. Retrying once...")
+                retry_messages = router_messages + [
+                    {"role": "assistant", "content": router_raw},
+                    {"role": "user", "content": f"The Python code failed with this error:\n{skill_output}\n\nPlease fix the code and try again. Output MUST use the exact same SKILL format."}
+                ]
+                try:
+                    retry_raw, retry_telemetry = llm.chat(retry_messages, temperature=0.2)
+                    _, retry_input = parse_router_response(retry_raw)
+                    if retry_input:
+                        print(f"[Agent] Retrying with fixed code:\n{retry_input}")
+                        skill_input = retry_input
+                        skill_output = runner(skill_input)
+                        print(f"[Skill Output (Retry)]\n{skill_output}")
+                        # Update router_raw and telemetry for downstream logging
+                        router_raw = retry_raw
+                        router_telemetry = retry_telemetry
+                except Exception as e:
+                    print(f"[Agent Error] Retry failed: {e}")
+            # ───────────────────────────────────────────────────
+            
         else:
             skill_output = f"[Error] Skill '{chosen_skill}' runner not found."
 
