@@ -50,7 +50,7 @@ User Query
 - **Web Search (`skills/web_search/`)**: Live search powered by DuckDuckGo with zero API keys required and resilient HTTP fallback.
 - **Deterministic Verification (`verification.py`)**: Verifies tool output without asking the model to judge itself.
 - **Full Traceability**: Every transaction logged to `agent_log.jsonl`.
-- **Streamlit Web UI (`app.py`)**: Includes a **Side-by-Side Comparison Mode** directly contrasting the raw model vs. the scaffolded agent.
+- **Interactive Web UI (`server.py` + `web/`)**: Features a clean interface with real-time verification status, tool telemetry, and execution traces in a slide-out inspection drawer.
 
 ---
 
@@ -84,12 +84,13 @@ pip install -r requirements.txt
 
 ## Running the Application
 
-### Option A: Streamlit Web UI (Recommended for Demo)
+### Option A: Web UI (FastAPI Server)
 ```bash
-streamlit run app.py
+python server.py
 ```
-- Toggle between **Scaffolded Agent Mode** and **Raw vs Scaffolded Comparison**.
-- Inspect intermediate tool code, stdout, and verification badges for every query.
+Open `http://127.0.0.1:8000` in your browser.
+- Inspect intermediate tool inputs, execution stdout, and verification badges in real-time.
+- View live router and synthesis latency metrics.
 
 ### Option B: Terminal Interactive REPL
 ```bash
