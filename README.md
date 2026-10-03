@@ -100,14 +100,14 @@ python main_terminal.py
 ### Option C: Automated Test Suites
 ```bash
 # Test Python Sandbox
-python test_sandbox.py
+python tests/test_sandbox.py
 
 # Test Web Search
-python test_search.py
+python tests/test_search.py
 
 # Test Router & Orchestrator
-python test_orchestrator.py
+python tests/test_orchestrator.py
 
 # Test Verification Layer
-python test_verification.py
+python tests/test_verification.py
 ```

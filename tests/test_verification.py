@@ -5,6 +5,10 @@
 # and negative failure cases), then tests end-to-end integration.
 # ─────────────────────────────────────────────────────────
 
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from verification import verify_python_output, verify_search_output, verify_result
 from orchestrator import run_pipeline
 

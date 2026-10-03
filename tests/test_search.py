@@ -4,6 +4,10 @@
 # Runs a live query and prints the snippets retrieved.
 # ─────────────────────────────────────────────────────────
 
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from skills.web_search.run import run
 
 

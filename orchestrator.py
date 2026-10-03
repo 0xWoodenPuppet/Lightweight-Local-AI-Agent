@@ -145,13 +145,22 @@ def run_pipeline(user_query: str) -> dict:
     except Exception as e:
         print(f"[Agent Error] LLM router call failed: {e}")
         return {
+            "timestamp": timestamp,
             "user_query": user_query,
             "router_raw": "",
             "chosen_skill": "none",
             "skill_input": "",
             "skill_output": None,
             "final_answer": f"Error contacting model: {e}",
-            "timestamp": timestamp,
+            "verification": {
+                "verified": False,
+                "status": "error",
+                "reason": f"Model error: {e}",
+            },
+            "telemetry": {
+                "router": None,
+                "synthesis": None,
+            },
         }
 
     chosen_skill, skill_input = parse_router_response(router_raw)
