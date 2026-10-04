@@ -12,6 +12,11 @@ __pycache__/
 agent_log.jsonl
 *.log
 
+# Local databases
+data/*.db
+data/*.db-shm
+data/*.db-wal
+
 # OS metadata
 .DS_Store
 Thumbs.db

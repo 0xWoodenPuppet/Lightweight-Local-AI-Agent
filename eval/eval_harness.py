@@ -8,16 +8,26 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from agent.orchestrator import run_pipeline
 from agent import llm
+import argparse
 
 def evaluate():
+    parser = argparse.ArgumentParser(description="Run evaluation harness on dataset")
+    parser.add_argument("--limit", type=int, default=None, help="Limit number of queries to evaluate")
+    parser.add_argument("--resume", action="store_true", help="Resume from previous results.json")
+    args = parser.parse_args()
+
     dataset_path = Path(__file__).parent / "dataset.json"
     results_path = Path(__file__).parent / "results.json"
     
-    with open(dataset_path, "r") as f:
+    with open(dataset_path, "r", encoding="utf-8") as f:
         dataset = json.load(f)
+
+    if args.limit:
+        dataset = dataset[:args.limit]
         
     results = []
-    
+    start_index = 0
+
     metrics = {
         "total": len(dataset),
         "raw_correct": 0,
@@ -25,12 +35,26 @@ def evaluate():
         "routing_correct": 0,
         "verification_precision": {"true_positive": 0, "false_positive": 0},
         "verification_recall": {"true_positive": 0, "false_negative": 0},
-        "overrides": 0  # Tool output was correct, but model final answer was wrong
+        "overrides": 0
     }
+
+    if args.resume and results_path.exists():
+        try:
+            with open(results_path, "r", encoding="utf-8") as f:
+                prev_data = json.load(f)
+                results = prev_data.get("results", [])
+                start_index = len(results)
+                if "metrics" in prev_data and start_index > 0:
+                    metrics = prev_data["metrics"]
+                    metrics["total"] = len(dataset)
+                    print(f"Resuming from question {start_index + 1}/{len(dataset)}...")
+        except Exception as e:
+            print(f"Could not resume from results.json: {e}. Starting fresh.")
     
-    print(f"Starting evaluation of {len(dataset)} questions...")
+    print(f"Starting evaluation of {len(dataset)} questions (starting at index {start_index})...")
     
-    for i, item in enumerate(dataset):
+    for i in range(start_index, len(dataset)):
+        item = dataset[i]
         query = item["query"]
         expected_skill = item["expected_skill"]
         ground_truth = item["ground_truth"]
@@ -100,11 +124,13 @@ def evaluate():
         }
         results.append(result_record)
         
-        print(f"Raw Correct: {raw_is_correct}")
-        print(f"Scaffolded Correct: {scaffolded_is_correct}")
-        
-    with open(results_path, "w") as f:
-        json.dump({"metrics": metrics, "results": results}, f, indent=2)
+        processed_count = len(results)
+        print(f"Raw Correct: {raw_is_correct} | Scaffolded Correct: {scaffolded_is_correct}")
+        print(f"--> Running Accuracy: Scaffolded {metrics['scaffolded_correct']}/{processed_count} ({metrics['scaffolded_correct']/processed_count*100:.1f}%) | Raw {metrics['raw_correct']}/{processed_count} ({metrics['raw_correct']/processed_count*100:.1f}%)")
+
+        # Incrementally persist so no progress is lost
+        with open(results_path, "w", encoding="utf-8") as f:
+            json.dump({"metrics": metrics, "results": results}, f, indent=2, ensure_ascii=False)
         
     print("\n================ EVALUATION SUMMARY ================")
     print(f"Total Questions: {metrics['total']}")

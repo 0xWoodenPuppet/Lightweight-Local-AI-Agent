@@ -113,24 +113,21 @@ def append_to_log(entry: dict) -> None:
         print(f"[Logging Warning] Could not write to log file: {e}")
 
 
-def run_pipeline(user_query: str) -> dict:
+def run_pipeline(
+    user_query: str,
+    verbatim_history: list[dict] | None = None,
+    memory_summary: str = ""
+) -> dict:
     """
     Execute the full end-to-end agentic pipeline for a user query.
-
-    Returns a dict with:
-        - user_query: str
-        - router_raw: str
-        - chosen_skill: str ("python" | "search" | "none")
-        - skill_input: str
-        - skill_output: str | None
-        - final_answer: str
-        - timestamp: str
+    Takes optional compacted memory (running summary and last 6 verbatim messages).
     """
     timestamp = datetime.now().isoformat()
 
     print(f"\n[Agent] Received query: {user_query}")
 
     # ── Phase 1: Router decision ──────────────────────────────
+    # Note: Router classifies purely on the current message, not the summary.
     router_messages = [
         {"role": "system", "content": build_router_prompt()},
         {"role": "user", "content": f"User Query: {user_query}"},
@@ -168,10 +165,24 @@ def run_pipeline(user_query: str) -> dict:
     skill_output: str | None = None
     final_answer: str = ""
 
-    # ── Phase 2: Tool execution (if applicable) ──────────────
+    # ── Phase 2: Tool execution / Direct Answer ──────────────
     if chosen_skill == "none":
-        # The model gave its direct answer in the input field
-        final_answer = skill_input
+        # If there is conversational context or memory summary, synthesize using memory + verbatim history
+        if verbatim_history or memory_summary:
+            system_content = "You are a helpful AI assistant. Answer the user clearly and concisely."
+            if memory_summary:
+                system_content += f"\n\nMemory Summary of prior conversation:\n{memory_summary}"
+            direct_messages = [{"role": "system", "content": system_content}]
+            if verbatim_history:
+                for msg in verbatim_history:
+                    direct_messages.append({"role": msg["role"], "content": msg["content"]})
+            direct_messages.append({"role": "user", "content": user_query})
+            try:
+                final_answer, synthesis_telemetry = llm.chat(direct_messages, temperature=0.3)
+            except Exception:
+                final_answer = skill_input
+        else:
+            final_answer = skill_input
     else:
         runner = get_skill_runner(chosen_skill)
         if runner:
@@ -199,7 +210,6 @@ def run_pipeline(user_query: str) -> dict:
                         skill_input = retry_input
                         skill_output = runner(skill_input)
                         print(f"[Skill Output (Retry)]\n{skill_output}")
-                        # Update router_raw and telemetry for downstream logging
                         router_raw = retry_raw
                         router_telemetry = retry_telemetry
                 except Exception as e:
@@ -210,25 +220,28 @@ def run_pipeline(user_query: str) -> dict:
             skill_output = f"[Error] Skill '{chosen_skill}' runner not found."
 
         # ── Phase 3: Final answer synthesis ──────────────────
-        synthesis_messages = [
-            {
-                "role": "system",
-                "content": (
-                    "You are a helpful AI assistant. "
-                    "Use the tool execution results provided below to answer the user's question clearly and accurately. "
-                    "Stay strictly grounded in the tool output. Do not make up facts."
-                ),
-            },
-            {
-                "role": "user",
-                "content": (
-                    f"User Query: {user_query}\n\n"
-                    f"Tool Chosen: {chosen_skill}\n"
-                    f"Tool Output:\n{skill_output}\n\n"
-                    "Please provide the final answer to the user:"
-                ),
-            },
-        ]
+        system_content = (
+            "You are a helpful AI assistant. "
+            "Use the tool execution results provided below to answer the user's question clearly and accurately. "
+            "Stay strictly grounded in the tool output. Do not make up facts."
+        )
+        if memory_summary:
+            system_content += f"\n\nMemory Summary of prior conversation:\n{memory_summary}"
+
+        synthesis_messages = [{"role": "system", "content": system_content}]
+        if verbatim_history:
+            for msg in verbatim_history:
+                synthesis_messages.append({"role": msg["role"], "content": msg["content"]})
+
+        synthesis_messages.append({
+            "role": "user",
+            "content": (
+                f"User Query: {user_query}\n\n"
+                f"Tool Chosen: {chosen_skill}\n"
+                f"Tool Output:\n{skill_output}\n\n"
+                "Please provide the final answer to the user:"
+            ),
+        })
 
         try:
             final_answer, synthesis_telemetry = llm.chat(synthesis_messages, temperature=0.3)

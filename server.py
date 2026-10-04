@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from agent.memory import process_memory
 from agent.orchestrator import run_pipeline
 from agent.storage import (
     list_conversations,
@@ -56,7 +57,8 @@ async def remove_conversation(conv_id: str):
 @app.post("/api/chat")
 async def chat_endpoint(req: ChatRequest):
     """
-    Receives a user query, runs pipeline, and records full transcript to local disk storage.
+    Receives a user query, processes compacted memory, runs pipeline,
+    and records full transcript to local disk storage.
     """
     try:
         conv_id = req.conversation_id or str(uuid.uuid4())
@@ -66,19 +68,30 @@ async def chat_endpoint(req: ChatRequest):
             messages = conv.get("messages", [])
             title = conv.get("title", req.query[:50])
             summary = conv.get("summary", "")
+            summarized_count = conv.get("summarized_count", 0)
         else:
             messages = []
             title = req.query[:50].strip() or "New conversation"
             summary = ""
+            summarized_count = 0
+
+        # Compact memory: get verbatim sliding window (last 6 messages) and updated summary
+        verbatim_history, active_summary, updated_count = process_memory(
+            messages, summary, summarized_count
+        )
+
+        # Run pipeline with compacted memory (router classifies on current query alone)
+        result = run_pipeline(
+            req.query,
+            verbatim_history=verbatim_history,
+            memory_summary=active_summary
+        )
 
         # Record user message in transcript
         messages.append({
             "role": "user",
             "content": req.query
         })
-
-        # Run existing pipeline as-is
-        result = run_pipeline(req.query)
 
         # Record assistant response with full transcript attributes
         messages.append({
@@ -90,12 +103,13 @@ async def chat_endpoint(req: ChatRequest):
             "verification": result.get("verification", None),
         })
 
-        # Save to SQLite disk storage
-        save_conversation(conv_id, title, messages, summary)
+        # Save to SQLite disk storage with updated summary and count
+        save_conversation(conv_id, title, messages, active_summary, updated_count)
 
         # Attach conversation metadata to response
         result["conversation_id"] = conv_id
         result["title"] = title
+        result["summary"] = active_summary
         return JSONResponse(content=result)
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)

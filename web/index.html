@@ -221,6 +221,128 @@
             font-weight: 700;
             color: var(--text);
         }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .memory-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 999px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            font-size: 12px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .memory-btn:hover {
+            color: var(--text);
+            border-color: rgba(255, 255, 255, 0.2);
+            background: var(--bg-bubble);
+        }
+        .memory-btn.has-memory {
+            color: #a78bfa;
+            border-color: rgba(167, 139, 250, 0.4);
+            background: rgba(167, 139, 250, 0.08);
+        }
+        .memory-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #a78bfa;
+            display: none;
+        }
+        .memory-btn.has-memory .memory-dot {
+            display: inline-block;
+        }
+
+        /* ── Memory Modal ────────────────────────────────── */
+        .memory-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .memory-modal-overlay.open {
+            display: flex;
+        }
+        .memory-modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            max-width: 520px;
+            width: 100%;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+            animation: modalIn 0.18s ease-out;
+            overflow: hidden;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.96); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+        .memory-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+        }
+        .memory-modal-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .memory-close-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            padding: 4px;
+        }
+        .memory-close-btn:hover { color: var(--text); }
+        .memory-modal-body {
+            padding: 16px 18px 20px;
+        }
+        .memory-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        .memory-content {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 14px 16px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text);
+            max-height: 280px;
+            overflow-y: auto;
+            word-wrap: break-word;
+        }
+        .memory-empty {
+            color: var(--text-muted);
+            font-style: italic;
+            font-size: 12px;
+        }
+
         .status-pill {
             display: inline-flex;
             align-items: center;
@@ -635,12 +757,44 @@
                         </button>
                         <span class="header-title">Local Agent</span>
                     </div>
-                    <span class="status-pill">
-                        <span class="status-dot"></span>
-                        Running locally&ensp;|&ensp;Qwen2.5 3B&ensp;|&ensp;private
-                    </span>
+                    <div class="header-right">
+                        <button class="memory-btn" id="memory-btn" onclick="toggleMemoryModal()" title="View compacted memory summary">
+                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"></path>
+                                <path d="M9 21h6"></path>
+                            </svg>
+                            <span>Memory</span>
+                            <span class="memory-dot" id="memory-dot"></span>
+                        </button>
+                        <span class="status-pill">
+                            <span class="status-dot"></span>
+                            Running locally&ensp;|&ensp;Qwen2.5 3B&ensp;|&ensp;private
+                        </span>
+                    </div>
                 </header>
                 <div class="messages" id="messages"></div>
+            </div>
+
+            <!-- Memory Modal Popup -->
+            <div class="memory-modal-overlay" id="memory-modal-overlay" onclick="toggleMemoryModal(false)">
+                <div class="memory-modal" onclick="event.stopPropagation()">
+                    <div class="memory-modal-header">
+                        <div class="memory-modal-title">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"></path>
+                                <path d="M9 21h6"></path>
+                            </svg>
+                            <span>Compacted Memory</span>
+                        </div>
+                        <button class="memory-close-btn" onclick="toggleMemoryModal(false)">✕</button>
+                    </div>
+                    <div class="memory-modal-body">
+                        <div class="memory-desc">
+                            Extractive summary of older conversation facts (names, preferences, decisions) and key tool results:
+                        </div>
+                        <div class="memory-content" id="memory-content"></div>
+                    </div>
+                </div>
             </div>
 
             <div class="input-area">
@@ -925,6 +1079,8 @@
                 addError(data.error);
             } else {
                 currentConversationId = data.conversation_id;
+                currentSummary = data.summary || "";
+                updateMemoryUI();
                 addAgent(data);
                 loadConversations();
             }
@@ -938,11 +1094,15 @@
         }
     }
 
-    /* ── Conversation Management ──────────────────────── */
+    /* ── Conversation & Memory Management ────────────── */
     let currentConversationId = null;
+    let currentSummary = "";
     const sidebarEl = document.getElementById('sidebar');
     const sidebarOverlayEl = document.getElementById('sidebar-overlay');
     const convListEl = document.getElementById('conv-list');
+    const memoryBtnEl = document.getElementById('memory-btn');
+    const memoryModalOverlayEl = document.getElementById('memory-modal-overlay');
+    const memoryContentEl = document.getElementById('memory-content');
 
     window.toggleSidebar = function(force) {
         if (typeof force === 'boolean') {
@@ -955,6 +1115,30 @@
             sidebarOverlayEl.classList.toggle('active', !sidebarEl.classList.contains('collapsed'));
         }
     };
+
+    window.toggleMemoryModal = function(force) {
+        if (typeof force === 'boolean') {
+            if (force) memoryModalOverlayEl.classList.add('open');
+            else memoryModalOverlayEl.classList.remove('open');
+        } else {
+            memoryModalOverlayEl.classList.toggle('open');
+        }
+        updateMemoryContent();
+    };
+
+    function updateMemoryUI() {
+        const has = Boolean(currentSummary && currentSummary.trim());
+        memoryBtnEl.classList.toggle('has-memory', has);
+        updateMemoryContent();
+    }
+
+    function updateMemoryContent() {
+        if (currentSummary && currentSummary.trim()) {
+            memoryContentEl.innerHTML = md(currentSummary);
+        } else {
+            memoryContentEl.innerHTML = '<span class="memory-empty">No memory summary generated yet. Facts (names, preferences, goals) and tool results from older messages will be compacted here.</span>';
+        }
+    }
 
     async function loadConversations() {
         try {
@@ -994,10 +1178,12 @@
 
     window.startNewChat = function() {
         currentConversationId = null;
+        currentSummary = "";
         messagesEl.innerHTML = '';
         const items = convListEl.querySelectorAll('.conv-item');
         items.forEach(el => el.classList.remove('active'));
         if (window.innerWidth <= 640) toggleSidebar(false);
+        updateMemoryUI();
         inputEl.focus();
     };
 
@@ -1008,6 +1194,9 @@
             if (data.error) return;
 
             currentConversationId = data.id;
+            currentSummary = data.summary || "";
+            updateMemoryUI();
+
             messagesEl.innerHTML = '';
 
             if (Array.isArray(data.messages)) {
@@ -1045,8 +1234,9 @@
         }
     };
 
-    // Initial load of history
+    // Initial load of history and memory
     loadConversations();
+    updateMemoryUI();
     </script>
 </body>
 </html>

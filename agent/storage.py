@@ -31,9 +31,15 @@ def init_db() -> None:
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL,
                 messages TEXT NOT NULL DEFAULT '[]',
-                summary TEXT NOT NULL DEFAULT ''
+                summary TEXT NOT NULL DEFAULT '',
+                summarized_count INTEGER NOT NULL DEFAULT 0
             );
         """)
+        # Safe migration if table already existed without column
+        try:
+            conn.execute("ALTER TABLE conversations ADD COLUMN summarized_count INTEGER NOT NULL DEFAULT 0;")
+        except sqlite3.OperationalError:
+            pass
         conn.commit()
 
 
@@ -41,7 +47,7 @@ def list_conversations() -> List[Dict[str, Any]]:
     init_db()
     with get_db_connection() as conn:
         cursor = conn.execute("""
-            SELECT id, title, created_at, updated_at, summary
+            SELECT id, title, created_at, updated_at, summary, summarized_count
             FROM conversations
             ORDER BY updated_at DESC
         """)
@@ -52,7 +58,7 @@ def get_conversation(conv_id: str) -> Optional[Dict[str, Any]]:
     init_db()
     with get_db_connection() as conn:
         cursor = conn.execute("""
-            SELECT id, title, created_at, updated_at, messages, summary
+            SELECT id, title, created_at, updated_at, messages, summary, summarized_count
             FROM conversations
             WHERE id = ?
         """, (conv_id,))
@@ -71,31 +77,34 @@ def save_conversation(
     conv_id: str,
     title: str,
     messages: List[Dict[str, Any]],
-    summary: Optional[str] = None
+    summary: Optional[str] = None,
+    summarized_count: Optional[int] = None
 ) -> Dict[str, Any]:
     init_db()
     now = datetime.now().isoformat()
     messages_json = json.dumps(messages, ensure_ascii=False)
 
     with get_db_connection() as conn:
-        cursor = conn.execute("SELECT created_at, summary FROM conversations WHERE id = ?", (conv_id,))
+        cursor = conn.execute("SELECT created_at, summary, summarized_count FROM conversations WHERE id = ?", (conv_id,))
         existing = cursor.fetchone()
 
         if existing:
             created_at = existing["created_at"]
             active_summary = summary if summary is not None else existing["summary"]
+            active_count = summarized_count if summarized_count is not None else existing["summarized_count"]
             conn.execute("""
                 UPDATE conversations
-                SET title = ?, updated_at = ?, messages = ?, summary = ?
+                SET title = ?, updated_at = ?, messages = ?, summary = ?, summarized_count = ?
                 WHERE id = ?
-            """, (title, now, messages_json, active_summary, conv_id))
+            """, (title, now, messages_json, active_summary, active_count, conv_id))
         else:
             created_at = now
             active_summary = summary or ""
+            active_count = summarized_count or 0
             conn.execute("""
-                INSERT INTO conversations (id, title, created_at, updated_at, messages, summary)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, (conv_id, title, created_at, now, messages_json, active_summary))
+                INSERT INTO conversations (id, title, created_at, updated_at, messages, summary, summarized_count)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (conv_id, title, created_at, now, messages_json, active_summary, active_count))
         conn.commit()
 
     return {
@@ -104,7 +113,8 @@ def save_conversation(
         "created_at": created_at,
         "updated_at": now,
         "messages": messages,
-        "summary": active_summary
+        "summary": active_summary,
+        "summarized_count": active_count
     }
 
 

@@ -1,0 +1,70 @@
+{
+  "metrics": {
+    "total": 3,
+    "raw_correct": 2,
+    "scaffolded_correct": 3,
+    "routing_correct": 2,
+    "verification_precision": {
+      "true_positive": 3,
+      "false_positive": 0
+    },
+    "verification_recall": {
+      "true_positive": 3,
+      "false_negative": 0
+    },
+    "overrides": 0
+  },
+  "results": [
+    {
+      "query": "The marching band is ordering new uniforms. Each uniform comes with a hat that costs $25, a jacket that costs three times as much as the hat, and pants that cost the average of the costs of the hat and jacket. How much does each uniform cost total?",
+      "expected_skill": "python",
+      "chosen_skill": "python",
+      "ground_truth": [
+        "150"
+      ],
+      "raw_response": "To determine the total cost of each uniform, we need to calculate the cost of each component (the hat, the jacket, and the pants) and then sum these costs.\n\n1. **Cost of the Hat:**\n   The cost of the hat is given as $25.\n\n2. **Cost of the Jacket:**\n   The jacket costs three times as much as the hat. Therefore, the cost of the jacket is:\n   \\[\n   3 \\times 25 = 75 \\text{ dollars}\n   \\]\n\n3. **Cost of the Pants:**\n   The pants cost the average of the costs of the hat and the jacket. The average is calculated as:\n   \\[\n   \\frac{25 + 75}{2} = \\frac{100}{2} = 50 \\text{ dollars}\n   \\]\n\n4. **Total Cost of the Uniform:**\n   To find the total cost of the uniform, we sum the costs of the hat, the jacket, and the pants:\n   \\[\n   25 + 75 + 50 = 150 \\text{ dollars}\n   \\]\n\nThus, the total cost of each uniform is \\(\\boxed{150}\\) dollars.",
+      "raw_correct": true,
+      "scaffolded_answer": "Each uniform costs a total of $150.0.",
+      "scaffolded_correct": true,
+      "verification": {
+        "verified": true,
+        "status": "verified",
+        "reason": "Code executed cleanly (exit 0) and computed values match the answer."
+      }
+    },
+    {
+      "query": "A mechanic charges different rates to repair the tires of trucks and cars.  For each truck tire that is repaired, the mechanic will charge $60 and for each car tire that is repaired, the mechanic will charge $40.  On Thursday, the mechanic repairs 6 truck tires and 4 car tires.  On Friday, the mechanic repairs 12 car tries and doesn't repair any truck tires.  How much more revenue did the mechanic earn on the day with higher revenue?",
+      "expected_skill": "python",
+      "chosen_skill": "none",
+      "ground_truth": [
+        "40"
+      ],
+      "raw_response": "To determine which day the mechanic earned more revenue and by how much, we need to calculate the total revenue for each day separately.\n\n### Thursday\n- The mechanic repairs 6 truck tires.\n- The mechanic repairs 4 car tires.\n\nThe revenue from repairing truck tires on Thursday:\n\\[ 6 \\text{ truck tires} \\times \\$60 \\text{ per truck tire} = 6 \\times 60 = \\$360 \\]\n\nThe revenue from repairing car tires on Thursday:\n\\[ 4 \\text{ car tires} \\times \\$40 \\text{ per car tire} = 4 \\times 40 = \\$160 \\]\n\nTotal revenue on Thursday:\n\\[ \\$360 + \\$160 = \\$520 \\]\n\n### Friday\n- The mechanic repairs 12 car tires.\n- The mechanic does not repair any truck tires.\n\nThe revenue from repairing car tires on Friday:\n\\[ 12 \\text{ car tires} \\times \\$40 \\text{ per car tire} = 12 \\times 40 = \\$480 \\]\n\nTotal revenue on Friday:\n\\[ \\$480 \\]\n\n### Comparison of Revenue\n- Revenue on Thursday: \\$520\n- Revenue on Friday: \\$480\n\nThe difference in revenue between Thursday and Friday:\n\\[ \\$520 - \\$480 = \\$40 \\]\n\nTherefore, the mechanic earned \\$40 more on Thursday than on Friday. The final answer is:\n\\[\n\\boxed{40}\n\\]",
+      "raw_correct": true,
+      "scaffolded_answer": "To determine which day the mechanic earned more revenue, we need to calculate the total revenue for Thursday and Friday separately. On Thursday, the mechanic repaired 6 truck tires and 4 car tires. The revenue from truck tires is $60 per tire, and the revenue from car tires is $40 per tire. On Friday, the mechanic repaired 12 car tires. Let's calculate the total revenue for both days.\n- Thursday: Revenue from truck tires = 6 * $60, Revenue from car tires = 4 * $40\n- Friday: Revenue from car tires = 12 * $40\n\nLet's calculate the total revenue for both days and then find the difference.\nSKILL: python\n# Thursday\nrevenue_truck_tires_thursday = 6 * 60\nrevenue_car_tires_thursday = 4 * 40\ntotal_revenue_thursday = revenue_truck_tires_thursday + revenue_car_tires_thursday\n\n# Friday\nrevenue_car_tires_friday = 12 * 40\n\n# Total revenue\ntotal_revenue_thursday = total_revenue_thursday + revenue_car_tires_friday\n\n# Difference in revenue\nrevenue_difference = total_revenue_friday - total_revenue_thursday\n\nrevenue_difference",
+      "scaffolded_correct": true,
+      "verification": {
+        "verified": true,
+        "status": "direct_answer",
+        "reason": "Direct model response with no external tool invocation."
+      }
+    },
+    {
+      "query": "When did the Channel 4 documentary Undercover Mosque air?",
+      "expected_skill": "search",
+      "chosen_skill": "search",
+      "ground_truth": [
+        "2007"
+      ],
+      "raw_response": "I'm sorry, but I don't have the specific air date for the Channel 4 documentary \"Undercover Mosque.\" Without access to current databases or the internet, I can't provide the exact air date. This type of information is best found through news archives or official Channel 4 listings. If you need this information, I recommend checking recent news archives or official Channel 4 schedules.",
+      "raw_correct": false,
+      "scaffolded_answer": "The Channel 4 documentary Undercover Mosque aired on 15 January 2007.",
+      "scaffolded_correct": true,
+      "verification": {
+        "verified": true,
+        "status": "verified",
+        "reason": "Grounded in search snippets (100% keyword match)."
+      }
+    }
+  ]
+}
