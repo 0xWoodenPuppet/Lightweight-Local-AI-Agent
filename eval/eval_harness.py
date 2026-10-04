@@ -82,11 +82,29 @@ def evaluate():
         verification = scaffolded_result["verification"]
         
         # 3. Assess Correctness
-        # Simple string inclusion for ground truth
+        # Robust normalization for punctuation, unicode dashes, and date ranges
         def is_correct(answer, truths):
             if not truths:
                 return True # For 'none' skill questions without specific GT
-            return any(str(t).lower() in str(answer).lower() for t in truths)
+            ans_clean = str(answer).lower().replace("–", "-").replace("—", "-")
+            for t in truths:
+                t_str = str(t).strip().rstrip(".,;:")
+                t_clean = t_str.lower().replace("–", "-").replace("—", "-")
+                if t_clean in ans_clean:
+                    return True
+                # If ground truth is a date or number range (e.g. "1568-1609"), check individual anchor years
+                if "-" in t_clean:
+                    parts = [p.strip() for p in t_clean.split("-") if len(p.strip()) >= 4]
+                    if parts and any(part in ans_clean for part in parts):
+                        return True
+                # Check float/integer equivalence (e.g. 12 vs 12.0)
+                try:
+                    num = float(t_clean)
+                    if num.is_integer() and f"{int(num)}" in ans_clean:
+                        return True
+                except ValueError:
+                    pass
+            return False
             
         raw_is_correct = is_correct(raw_response, ground_truth)
         scaffolded_is_correct = is_correct(final_answer, ground_truth)
