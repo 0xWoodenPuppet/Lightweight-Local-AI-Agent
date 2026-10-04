@@ -37,12 +37,151 @@
         }
 
         /* ── Layout ──────────────────────────────────────── */
+        /* ── Layout & Sidebar ────────────────────────────── */
+        .layout-container {
+            display: flex;
+            height: 100%;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            transition: width 0.22s ease, transform 0.22s ease, opacity 0.2s ease;
+            z-index: 50;
+            height: 100%;
+        }
+        .sidebar.collapsed {
+            width: 0;
+            overflow: hidden;
+            border-right-color: transparent;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .sidebar-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 14px;
+            border-bottom: 1px solid var(--border);
+            gap: 8px;
+        }
+
+        .new-chat-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 9px 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .new-chat-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .conv-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .conv-list::-webkit-scrollbar { width: 4px; }
+        .conv-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        .conv-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 9px 12px;
+            border-radius: 8px;
+            color: var(--text-dim);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+        .conv-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+        }
+        .conv-item.active {
+            background: rgba(75, 141, 248, 0.12);
+            color: var(--accent);
+            font-weight: 500;
+        }
+        .conv-title {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 6px;
+        }
+        .conv-del-btn {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: color 0.15s, background 0.15s;
+        }
+        .conv-item:hover .conv-del-btn,
+        .conv-item.active .conv-del-btn {
+            display: flex;
+        }
+        .conv-del-btn:hover {
+            color: var(--error);
+            background: rgba(248, 113, 113, 0.12);
+        }
+
+        .main-chat-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-width: 0;
+            position: relative;
+        }
+
         .app {
             display: flex;
             flex-direction: column;
             height: 100%;
             max-width: 860px;
+            width: 100%;
             margin: 0 auto;
+            min-width: 0;
         }
 
         /* ── Header ──────────────────────────────────────── */
@@ -53,6 +192,29 @@
             padding: 18px 24px;
             border-bottom: 1px solid var(--border);
             flex-shrink: 0;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .sidebar-toggle-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .sidebar-toggle-btn:hover {
+            color: var(--text);
+            border-color: rgba(255, 255, 255, 0.2);
+            background: var(--bg-bubble);
         }
         .header-title {
             font-size: 18px;
@@ -134,13 +296,50 @@
         .badge-search { color: var(--badge-search); border-color: var(--badge-search); }
         .badge-direct { color: var(--badge-direct); border-color: var(--badge-direct); }
 
+        /* ── Copy buttons ────────────────────────────────── */
+        .copy-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 6px;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 11px;
+            font-family: inherit;
+            line-height: 1;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+        .copy-btn:hover {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--border);
+        }
+        .copy-btn.copied {
+            color: #34d399;
+            border-color: rgba(52, 211, 153, 0.3);
+            background: rgba(52, 211, 153, 0.12);
+        }
+        .reply-copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
         /* Agent bubble */
         .agent-bubble {
+            position: relative;
             background: var(--bg-bubble);
             border-radius: var(--radius);
             padding: 16px 20px;
             font-size: 15px;
             line-height: 1.65;
+        }
+        .agent-bubble-text {
+            padding-right: 28px;
         }
 
         /* Markdown inside agent bubble */
@@ -209,6 +408,38 @@
             margin: 0;
             color: var(--text);
             overflow-x: auto;
+        }
+        .expand-code-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+        .expand-code-row:not(:first-child) { margin-top: 12px; }
+        .expand-code-row .expand-label { margin-bottom: 0; }
+
+        .code-block {
+            margin: 8px 0;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            background: var(--bg);
+        }
+        .code-block-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4px 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid var(--border);
+            font-size: 11px;
+            color: var(--text-dim);
+            font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+        }
+        .code-block pre {
+            margin: 0 !important;
+            border: none !important;
+            border-radius: 0 !important;
         }
         .expand-label {
             font-size: 10px;
@@ -341,6 +572,27 @@
 
         /* ── Responsive ──────────────────────────────────── */
         @media (max-width: 640px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                transform: translateX(-100%);
+                width: 280px;
+                box-shadow: 4px 0 20px rgba(0,0,0,0.5);
+            }
+            .sidebar:not(.collapsed) {
+                transform: translateX(0);
+                width: 280px;
+                opacity: 1;
+                pointer-events: auto;
+            }
+            .sidebar.collapsed {
+                transform: translateX(-100%);
+            }
+            .sidebar-overlay.active {
+                display: block;
+            }
             .header { padding: 14px 16px; }
             .header-title { font-size: 16px; }
             .status-pill { font-size: 11px; padding: 4px 10px; }
@@ -352,25 +604,55 @@
     </style>
 </head>
 <body>
-    <div class="app">
-        <header class="header">
-            <span class="header-title">Local Agent</span>
-            <span class="status-pill">
-                <span class="status-dot"></span>
-                Running locally&ensp;|&ensp;Qwen2.5 3B&ensp;|&ensp;private
-            </span>
-        </header>
-        <div class="messages" id="messages"></div>
-    </div>
+    <div class="layout-container">
+        <!-- Sidebar overlay for mobile -->
+        <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar(false)"></div>
 
-    <div class="input-area">
-        <div class="input-wrap">
-            <textarea id="input" rows="1" placeholder="Message your local agent..." autocomplete="off"></textarea>
-            <button class="send-btn" id="send-btn" title="Send">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="18 15 12 9 6 15"></polyline>
-                </svg>
-            </button>
+        <!-- Collapsible Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-top">
+                <button class="new-chat-btn" onclick="startNewChat()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>New chat</span>
+                </button>
+            </div>
+            <div class="conv-list" id="conv-list"></div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <div class="main-chat-wrap">
+            <div class="app">
+                <header class="header">
+                    <div class="header-left">
+                        <button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle past chats">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="9" y1="3" x2="9" y2="21"></line>
+                            </svg>
+                        </button>
+                        <span class="header-title">Local Agent</span>
+                    </div>
+                    <span class="status-pill">
+                        <span class="status-dot"></span>
+                        Running locally&ensp;|&ensp;Qwen2.5 3B&ensp;|&ensp;private
+                    </span>
+                </header>
+                <div class="messages" id="messages"></div>
+            </div>
+
+            <div class="input-area">
+                <div class="input-wrap">
+                    <textarea id="input" rows="1" placeholder="Message your local agent..." autocomplete="off"></textarea>
+                    <button class="send-btn" id="send-btn" title="Send">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="18 15 12 9 6 15"></polyline>
+                        </svg>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -395,18 +677,81 @@
     function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
     function escAttr(s) { return s.replace(/"/g,'&quot;'); }
 
+    /* ── Clipboard Helpers ────────────────────────────── */
+    function copyToClipboard(text, btn) {
+        const orig = btn.innerHTML;
+        const setCopied = () => {
+            btn.classList.add('copied');
+            btn.innerHTML = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied`;
+            setTimeout(() => {
+                btn.innerHTML = orig;
+                btn.classList.remove('copied');
+            }, 1800);
+        };
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(setCopied).catch(() => fallbackCopy(text, setCopied));
+        } else {
+            fallbackCopy(text, setCopied);
+        }
+    }
+
+    function fallbackCopy(text, cb) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        try {
+            document.execCommand('copy');
+            if (cb) cb();
+        } catch (e) {
+            console.error('Copy failed', e);
+        }
+        document.body.removeChild(ta);
+    }
+
+    window.copyReply = function(btn) {
+        const bubble = btn.closest('.agent-bubble');
+        const textEl = bubble ? bubble.querySelector('.agent-bubble-text') : null;
+        const text = textEl ? (textEl.innerText || textEl.textContent) : '';
+        copyToClipboard(text.trim(), btn);
+    };
+
+    window.copyCode = function(btn, id) {
+        const el = document.getElementById(id);
+        const text = el ? (el.innerText || el.textContent) : '';
+        copyToClipboard(text.trim(), btn);
+    };
+
     /* ── Minimal markdown ──────────────────────────────── */
     function md(text) {
         if (!text) return '';
         let h = esc(text)
-            .replace(/```(\w*)\n([\s\S]*?)```/g, (_, l, code) => `<pre><code>${code.trim()}</code></pre>`)
+            .replace(/```(\w*)\n([\s\S]*?)```/g, (_, l, code) => {
+                const cid = 'mc_' + Math.random().toString(36).substr(2, 9);
+                return `<div class="code-block">
+                    <div class="code-block-header">
+                        <span>${esc(l || 'code')}</span>
+                        <button class="copy-btn" onclick="copyCode(this, '${cid}')" title="Copy code">
+                            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <pre id="${cid}"><code>${code.trim()}</code></pre>
+                </div>`;
+            })
             .replace(/`([^`]+)`/g, '<code>$1</code>')
             .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
             .replace(/\*(.+?)\*/g, '<em>$1</em>')
             .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
         return h.split(/\n{2,}/).map(p => {
             p = p.trim();
-            if (!p || p.startsWith('<pre>')) return p;
+            if (!p || p.startsWith('<div class="code-block">')) return p;
             return `<p>${p.replace(/\n/g, '<br>')}</p>`;
         }).join('');
     }
@@ -450,17 +795,34 @@
 
     /* ── Build code expand section ─────────────────────── */
     function codeExpandHtml(input, output) {
-        const id = 'exp_' + Date.now();
-        const count = (output || '').split('\n').filter(l => l.trim()).length;
+        const id = 'exp_' + Math.random().toString(36).substr(2, 9);
+        const inId = 'in_' + Math.random().toString(36).substr(2, 9);
+        const outId = 'out_' + Math.random().toString(36).substr(2, 9);
         return `
             <div class="expand-trigger" onclick="toggle('${id}', this)">
                 Show code and output <span class="chevron">›</span>
             </div>
             <div class="expand-content" id="${id}">
-                <div class="expand-label">Generated code</div>
-                <pre>${esc(input || '')}</pre>
-                <div class="expand-label">Output</div>
-                <pre>${esc(output || '(no output)')}</pre>
+                <div class="expand-code-row">
+                    <span class="expand-label">Generated code</span>
+                    <button class="copy-btn" onclick="copyCode(this, '${inId}')" title="Copy code">
+                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                    </button>
+                </div>
+                <pre id="${inId}">${esc(input || '')}</pre>
+                <div class="expand-code-row">
+                    <span class="expand-label">Output</span>
+                    <button class="copy-btn" onclick="copyCode(this, '${outId}')" title="Copy output">
+                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                    </button>
+                </div>
+                <pre id="${outId}">${esc(output || '(no output)')}</pre>
             </div>`;
     }
 
@@ -511,7 +873,15 @@
         d.innerHTML = `
             ${badgeFor(data.chosen_skill)}
             <div class="agent-bubble">
-                ${md(data.final_answer)}
+                <button class="copy-btn reply-copy-btn" onclick="copyReply(this)" title="Copy reply">
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                </button>
+                <div class="agent-bubble-text">
+                    ${md(data.final_answer)}
+                </div>
                 ${extra}
             </div>`;
         messagesEl.appendChild(d);
@@ -543,7 +913,10 @@
             const res = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query })
+                body: JSON.stringify({
+                    query,
+                    conversation_id: currentConversationId
+                })
             });
             const data = await res.json();
             thinking.remove();
@@ -551,7 +924,9 @@
             if (data.error) {
                 addError(data.error);
             } else {
+                currentConversationId = data.conversation_id;
                 addAgent(data);
+                loadConversations();
             }
         } catch (err) {
             thinking.remove();
@@ -562,6 +937,116 @@
             inputEl.focus();
         }
     }
+
+    /* ── Conversation Management ──────────────────────── */
+    let currentConversationId = null;
+    const sidebarEl = document.getElementById('sidebar');
+    const sidebarOverlayEl = document.getElementById('sidebar-overlay');
+    const convListEl = document.getElementById('conv-list');
+
+    window.toggleSidebar = function(force) {
+        if (typeof force === 'boolean') {
+            if (force) sidebarEl.classList.remove('collapsed');
+            else sidebarEl.classList.add('collapsed');
+        } else {
+            sidebarEl.classList.toggle('collapsed');
+        }
+        if (window.innerWidth <= 640) {
+            sidebarOverlayEl.classList.toggle('active', !sidebarEl.classList.contains('collapsed'));
+        }
+    };
+
+    async function loadConversations() {
+        try {
+            const res = await fetch('/api/conversations');
+            const data = await res.json();
+            if (!Array.isArray(data)) return;
+            renderConversations(data);
+        } catch (e) {
+            console.error('Failed to load conversations', e);
+        }
+    }
+
+    function renderConversations(list) {
+        convListEl.innerHTML = '';
+        if (list.length === 0) {
+            convListEl.innerHTML = `<div style="padding:14px 10px; font-size:12px; color:var(--text-muted); text-align:center;">No past chats yet</div>`;
+            return;
+        }
+
+        list.forEach(item => {
+            const row = document.createElement('div');
+            row.className = `conv-item ${item.id === currentConversationId ? 'active' : ''}`;
+            row.onclick = () => openConversation(item.id);
+
+            row.innerHTML = `
+                <span class="conv-title" title="${esc(item.title)}">${esc(item.title)}</span>
+                <button class="conv-del-btn" onclick="event.stopPropagation(); deleteConv('${item.id}')" title="Delete chat">
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                </button>
+            `;
+            convListEl.appendChild(row);
+        });
+    }
+
+    window.startNewChat = function() {
+        currentConversationId = null;
+        messagesEl.innerHTML = '';
+        const items = convListEl.querySelectorAll('.conv-item');
+        items.forEach(el => el.classList.remove('active'));
+        if (window.innerWidth <= 640) toggleSidebar(false);
+        inputEl.focus();
+    };
+
+    window.openConversation = async function(convId) {
+        try {
+            const res = await fetch(`/api/conversations/${convId}`);
+            const data = await res.json();
+            if (data.error) return;
+
+            currentConversationId = data.id;
+            messagesEl.innerHTML = '';
+
+            if (Array.isArray(data.messages)) {
+                data.messages.forEach(msg => {
+                    if (msg.role === 'user') {
+                        addUser(msg.content);
+                    } else if (msg.role === 'assistant') {
+                        addAgent({
+                            chosen_skill: msg.chosen_skill || 'none',
+                            final_answer: msg.content,
+                            skill_input: msg.skill_input,
+                            skill_output: msg.skill_output
+                        });
+                    }
+                });
+            }
+
+            loadConversations();
+            if (window.innerWidth <= 640) toggleSidebar(false);
+        } catch (e) {
+            console.error('Failed to open conversation', e);
+        }
+    };
+
+    window.deleteConv = async function(convId) {
+        try {
+            await fetch(`/api/conversations/${convId}`, { method: 'DELETE' });
+            if (currentConversationId === convId) {
+                startNewChat();
+            } else {
+                loadConversations();
+            }
+        } catch (e) {
+            console.error('Failed to delete conversation', e);
+        }
+    };
+
+    // Initial load of history
+    loadConversations();
     </script>
 </body>
 </html>
