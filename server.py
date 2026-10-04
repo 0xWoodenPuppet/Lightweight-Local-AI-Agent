@@ -20,6 +20,7 @@ app = FastAPI(title="Lightweight Local AI Agent API")
 class ChatRequest(BaseModel):
     query: str
     conversation_id: Optional[str] = None
+    skill_mode: Optional[str] = "auto"
 
 
 @app.get("/api/conversations")
@@ -80,11 +81,12 @@ async def chat_endpoint(req: ChatRequest):
             messages, summary, summarized_count
         )
 
-        # Run pipeline with compacted memory (router classifies on current query alone)
+        # Run pipeline with compacted memory and optional forced skill mode
         result = run_pipeline(
             req.query,
             verbatim_history=verbatim_history,
-            memory_summary=active_summary
+            memory_summary=active_summary,
+            forced_skill=req.skill_mode or "auto"
         )
 
         # Record user message in transcript

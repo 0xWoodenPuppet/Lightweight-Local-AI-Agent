@@ -58,6 +58,8 @@ Hello! I am your AI assistant. How can I help you today?
 Rules:
 1. The first line must be exactly SKILL: <name>.
 2. Everything after the first line is treated as the input for that skill.
+3. MANDATORY FOR MATH: If the user query contains ANY arithmetic, calculation, counting, or word problem with numbers (costs, quantities, ages, time, percentages), you MUST choose 'python'. NEVER solve math in your head with 'none'.
+4. For 'none', use ONLY for pure conversations, greetings, definitions, advice, or general explanations that require NO calculation and NO web search.
 {skills_rules}
 - For 'none', the input must be a helpful direct answer.
 """
@@ -116,48 +118,72 @@ def append_to_log(entry: dict) -> None:
 def run_pipeline(
     user_query: str,
     verbatim_history: list[dict] | None = None,
-    memory_summary: str = ""
+    memory_summary: str = "",
+    forced_skill: str = "auto"
 ) -> dict:
     """
     Execute the full end-to-end agentic pipeline for a user query.
     Takes optional compacted memory (running summary and last 6 verbatim messages).
+    Supports forced_skill override ('auto', 'python', 'search', 'none').
     """
     timestamp = datetime.now().isoformat()
 
-    print(f"\n[Agent] Received query: {user_query}")
+    print(f"\n[Agent] Received query: {user_query} (Mode: {forced_skill})")
 
-    # ── Phase 1: Router decision ──────────────────────────────
-    # Note: Router classifies purely on the current message, not the summary.
-    router_messages = [
-        {"role": "system", "content": build_router_prompt()},
-        {"role": "user", "content": f"User Query: {user_query}"},
-    ]
+    router_messages = []
+    # ── Phase 1: Router decision or Manual Override ───────────
+    if forced_skill and forced_skill != "auto":
+        print(f"[Agent] User override active: forcing skill '{forced_skill}'")
+        chosen_skill = forced_skill
+        router_raw = f"[User Override] Forced: {forced_skill}"
+        router_telemetry = None
+        if chosen_skill == "none" or chosen_skill == "search":
+            skill_input = user_query
+        elif chosen_skill == "python":
+            code_prompt = [
+                {"role": "system", "content": "You are an expert Python assistant. Write ONLY valid, executable Python code that computes the solution and prints the final result. Do NOT output markdown code blocks or explanations."},
+                {"role": "user", "content": user_query}
+            ]
+            try:
+                code_raw, router_telemetry = llm.chat(code_prompt, temperature=0.1)
+                skill_input = code_raw.replace("```python", "").replace("```", "").strip()
+            except Exception:
+                skill_input = user_query
+        else:
+            skill_input = user_query
+    else:
+        # Autonomous Router decision
+        router_messages = [
+            {"role": "system", "content": build_router_prompt()},
+            {"role": "user", "content": f"User Query: {user_query}"},
+        ]
 
-    try:
-        # Lower temperature for deterministic routing
-        router_raw, router_telemetry = llm.chat(router_messages, temperature=0.1)
-    except Exception as e:
-        print(f"[Agent Error] LLM router call failed: {e}")
-        return {
-            "timestamp": timestamp,
-            "user_query": user_query,
-            "router_raw": "",
-            "chosen_skill": "none",
-            "skill_input": "",
-            "skill_output": None,
-            "final_answer": f"Error contacting model: {e}",
-            "verification": {
-                "verified": False,
-                "status": "error",
-                "reason": f"Model error: {e}",
-            },
-            "telemetry": {
-                "router": None,
-                "synthesis": None,
-            },
-        }
+        try:
+            # Lower temperature for deterministic routing
+            router_raw, router_telemetry = llm.chat(router_messages, temperature=0.1)
+        except Exception as e:
+            print(f"[Agent Error] LLM router call failed: {e}")
+            return {
+                "timestamp": timestamp,
+                "user_query": user_query,
+                "router_raw": "",
+                "chosen_skill": "none",
+                "skill_input": "",
+                "skill_output": None,
+                "final_answer": f"Error contacting model: {e}",
+                "verification": {
+                    "verified": False,
+                    "status": "error",
+                    "reason": f"Model error: {e}",
+                },
+                "telemetry": {
+                    "router": None,
+                    "synthesis": None,
+                },
+            }
 
-    chosen_skill, skill_input = parse_router_response(router_raw)
+        chosen_skill, skill_input = parse_router_response(router_raw)
+
     print(f"[Router Choice] Skill: {chosen_skill}")
     if skill_input:
         print(f"[Skill Input]  {skill_input}")
@@ -198,13 +224,22 @@ def run_pipeline(
             retry_indicators = skill_meta.get("retry_error_indicators", [])
             if skill_meta.get("can_retry") and skill_output and any(ind in skill_output for ind in retry_indicators):
                 print(f"[Agent] Detected error in {chosen_skill} execution. Retrying once...")
-                retry_messages = router_messages + [
-                    {"role": "assistant", "content": router_raw},
-                    {"role": "user", "content": f"The {chosen_skill} execution failed with this error:\n{skill_output}\n\nPlease fix the input and try again. Output MUST use the exact same SKILL format."}
-                ]
+                if router_messages:
+                    retry_messages = router_messages + [
+                        {"role": "assistant", "content": router_raw},
+                        {"role": "user", "content": f"The {chosen_skill} execution failed with this error:\n{skill_output}\n\nPlease fix the input and try again. Output MUST use the exact same SKILL format."}
+                    ]
+                else:
+                    retry_messages = [
+                        {"role": "system", "content": "You are an expert Python assistant. Write ONLY valid, executable Python code that computes the solution and prints the final result. Do NOT output markdown code blocks or explanations."},
+                        {"role": "user", "content": f"User Query: {user_query}\n\nYour previous code failed with this error:\n{skill_output}\n\nPlease fix the code and output ONLY executable Python code."}
+                    ]
                 try:
                     retry_raw, retry_telemetry = llm.chat(retry_messages, temperature=0.2)
-                    _, retry_input = parse_router_response(retry_raw)
+                    if router_messages:
+                        _, retry_input = parse_router_response(retry_raw)
+                    else:
+                        retry_input = retry_raw.replace("```python", "").replace("```", "").strip()
                     if retry_input:
                         print(f"[Agent] Retrying with fixed input:\n{retry_input}")
                         skill_input = retry_input
