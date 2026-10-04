@@ -34,14 +34,29 @@ def _load_skill_description(skill_dir: str) -> str:
 #   skill_key -> dict with:
 #     - "name": human-friendly name
 #     - "description": one-line summary of what it does and when to use it
+#     - "input_rule": instruction for formatting the input
+#     - "example_query": realistic user prompt example
+#     - "example_input": formatted tool input for the example
+#     - "can_retry": boolean flag enabling self-retry on failure
+#     - "retry_error_indicators": list of substrings signaling a retryable error
 SKILL_REGISTRY: dict[str, dict] = {
     "python": {
         "name": "Python Sandbox",
         "description": _load_skill_description("python_sandbox"),
+        "input_rule": "For 'python', the input must be executable Python code that prints the result.",
+        "example_query": "What is 45 factorial?",
+        "example_input": "import math\nprint(math.factorial(45))",
+        "can_retry": True,
+        "retry_error_indicators": ["[Sandbox Error]", "[STDERR]"],
     },
     "search": {
         "name": "Web Search",
         "description": _load_skill_description("web_search"),
+        "input_rule": "For 'search', the input must be a search query.",
+        "example_query": "Who won the latest football world cup?",
+        "example_input": "latest football world cup winner",
+        "can_retry": False,
+        "retry_error_indicators": [],
     },
 }
 
@@ -61,6 +76,12 @@ def get_skill_runner(skill_name: str) -> Callable[[str], str] | None:
     return None
 
 
+def get_skills_options() -> str:
+    """Return pipe-separated string of registered skills plus 'none'."""
+    keys = list(SKILL_REGISTRY.keys()) + ["none"]
+    return "|".join(keys)
+
+
 def get_skills_prompt_description() -> str:
     """
     Format the available skills into a clean, concise string for the LLM system prompt.
@@ -68,4 +89,25 @@ def get_skills_prompt_description() -> str:
     lines = []
     for key, info in SKILL_REGISTRY.items():
         lines.append(f"- {key}: {info['description']}")
+    return "\n".join(lines)
+
+
+def get_skills_few_shot_examples() -> str:
+    """Dynamically generate few-shot examples for all registered skills."""
+    blocks = []
+    for key, info in SKILL_REGISTRY.items():
+        q = info.get("example_query")
+        inp = info.get("example_input")
+        if q and inp:
+            blocks.append(f"User: {q}\nSKILL: {key}\n{inp}\n")
+    return "\n".join(blocks)
+
+
+def get_skills_rules() -> str:
+    """Dynamically generate rule bullet points for all registered skills."""
+    lines = []
+    for key, info in SKILL_REGISTRY.items():
+        rule = info.get("input_rule")
+        if rule:
+            lines.append(f"- {rule}")
     return "\n".join(lines)

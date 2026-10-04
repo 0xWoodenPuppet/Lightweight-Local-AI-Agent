@@ -3,175 +3,565 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lightweight Agentic UI</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        slate: {
-                            850: '#1e293b',
-                            900: '#0f172a',
-                        },
-                        sage: {
-                            500: '#8ba888',
-                            600: '#6c8d69',
-                            700: '#4d6f4b',
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Inter Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
+    <title>Lightweight Local AI Agent</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        .glass-panel { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
-        .chat-scroll::-webkit-scrollbar { width: 6px; }
-        .chat-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        pre { white-space: pre-wrap; word-wrap: break-word; }
-        /* Markdown content styling */
-        .msg-content p { margin-bottom: 0.5rem; }
-        .msg-content code { background: rgba(0,0,0,0.1); padding: 0.1rem 0.3rem; border-radius: 0.25rem; font-family: monospace; font-size: 0.9em; }
-        .msg-content pre { background: #1e293b; color: #f8fafc; padding: 1rem; border-radius: 0.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem; overflow-x: auto; }
-        .msg-content pre code { background: none; padding: 0; color: inherit; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:            #0d0d11;
+            --bg-secondary:  #171720;
+            --bg-bubble:     #1e1e2a;
+            --bg-input:      #1a1a26;
+            --border:        #2a2a38;
+            --text:          #e4e4ed;
+            --text-dim:      #8e8ea0;
+            --text-muted:    #5a5a6e;
+            --accent:        #4b8df8;
+            --accent-hover:  #6ba1ff;
+            --badge-code:    #34d399;
+            --badge-search:  #34d399;
+            --badge-direct:  #facc15;
+            --error:         #f87171;
+            --radius:        16px;
+            --radius-sm:     10px;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Layout ──────────────────────────────────────── */
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            max-width: 860px;
+            margin: 0 auto;
+        }
+
+        /* ── Header ──────────────────────────────────────── */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .header-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-dim);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 6px #22c55e;
+        }
+
+        /* ── Messages ────────────────────────────────────── */
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 28px 24px 130px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        .messages::-webkit-scrollbar { width: 5px; }
+        .messages::-webkit-scrollbar-thumb { background: #2a2a38; border-radius: 4px; }
+
+        /* Message rows */
+        .msg { animation: fadeUp 0.22s ease-out; }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .msg-user {
+            display: flex;
+            justify-content: flex-end;
+        }
+        .msg-user .bubble {
+            background: var(--accent);
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 20px;
+            max-width: 75%;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .msg-agent { max-width: 80%; }
+
+        /* Skill badge */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 3px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            border: 1.5px solid;
+        }
+        .badge::before {
+            content: '◆';
+            font-size: 9px;
+        }
+        .badge-code   { color: var(--badge-code);   border-color: var(--badge-code); }
+        .badge-search { color: var(--badge-search); border-color: var(--badge-search); }
+        .badge-direct { color: var(--badge-direct); border-color: var(--badge-direct); }
+
+        /* Agent bubble */
+        .agent-bubble {
+            background: var(--bg-bubble);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            font-size: 15px;
+            line-height: 1.65;
+        }
+
+        /* Markdown inside agent bubble */
+        .agent-bubble p { margin-bottom: 8px; }
+        .agent-bubble p:last-child { margin-bottom: 0; }
+        .agent-bubble strong { font-weight: 600; }
+        .agent-bubble code {
+            background: rgba(255,255,255,0.07);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.88em;
+        }
+        .agent-bubble pre {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            overflow-x: auto;
+            margin: 8px 0;
+            font-size: 13px;
+        }
+        .agent-bubble pre code { background: none; padding: 0; font-size: inherit; }
+        .agent-bubble ul, .agent-bubble ol { padding-left: 18px; margin: 6px 0; }
+        .agent-bubble li { margin-bottom: 4px; }
+        .agent-bubble a { color: var(--accent-hover); text-decoration: underline; }
+
+        /* ── Expand trigger inside bubble ─────────────────── */
+        .expand-trigger {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            font-size: 13px;
+            color: var(--text-dim);
+            cursor: pointer;
+            user-select: none;
+            width: 100%;
+            transition: color 0.15s;
+        }
+        .expand-trigger:hover { color: var(--text); }
+        .expand-trigger .chevron {
+            font-size: 11px;
+            transition: transform 0.2s;
+            display: inline-block;
+        }
+        .expand-trigger.open .chevron { transform: rotate(90deg); }
+
+        .expand-content {
+            display: none;
+            margin-top: 10px;
+        }
+        .expand-content.open { display: block; }
+
+        .expand-content pre {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin: 0;
+            color: var(--text);
+            overflow-x: auto;
+        }
+        .expand-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+        }
+        .expand-label:not(:first-child) { margin-top: 12px; }
+
+        /* Source links */
+        .source-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.03);
+            text-decoration: none;
+            transition: background 0.15s;
+            margin-bottom: 4px;
+        }
+        .source-item:hover { background: rgba(255,255,255,0.06); }
+        .source-idx {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(75,141,248,0.15);
+            color: var(--accent-hover);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        .source-text { line-height: 1.35; }
+        .source-title {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text);
+        }
+        .source-url {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: block;
+        }
+
+        /* ── Thinking ────────────────────────────────────── */
+        .thinking {
+            font-size: 14px;
+            color: var(--text-muted);
+            padding: 4px 0;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50%      { opacity: 1; }
+        }
+
+        /* ── Error ───────────────────────────────────────── */
+        .error-msg {
+            background: rgba(248,113,113,0.08);
+            border: 1px solid rgba(248,113,113,0.2);
+            color: var(--error);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* ── Input area ──────────────────────────────────── */
+        .input-area {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 14px 24px 22px;
+            background: linear-gradient(to top, var(--bg) 65%, transparent);
+        }
+        .input-wrap {
+            max-width: 812px;
+            margin: 0 auto;
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            padding: 6px 8px 6px 22px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input-wrap:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(75,141,248,0.12);
+        }
+        .input-wrap textarea {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 15px;
+            line-height: 1.5;
+            resize: none;
+            max-height: 120px;
+            padding: 8px 0;
+        }
+        .input-wrap textarea::placeholder { color: var(--text-muted); }
+
+        .send-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: var(--accent);
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: background 0.2s, opacity 0.2s;
+        }
+        .send-btn:hover { background: var(--accent-hover); }
+        .send-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .send-btn svg { width: 18px; height: 18px; }
+
+        /* ── Responsive ──────────────────────────────────── */
+        @media (max-width: 640px) {
+            .header { padding: 14px 16px; }
+            .header-title { font-size: 16px; }
+            .status-pill { font-size: 11px; padding: 4px 10px; }
+            .messages { padding: 20px 14px 115px 14px; }
+            .msg-agent { max-width: 92%; }
+            .msg-user .bubble { max-width: 85%; }
+            .input-area { padding: 10px 14px 16px; }
+        }
     </style>
 </head>
-<body class="h-screen w-screen overflow-hidden flex bg-slate-50 text-slate-800">
-    
-    <!-- 1. Left Nav Rail -->
-    <nav class="w-16 h-full bg-slate-900 flex flex-col items-center py-6 gap-8 z-20 shadow-xl">
-        <button class="p-3 text-slate-400 hover:text-white transition-colors" title="Chat">
-            <i data-lucide="message-square"></i>
-        </button>
-        <button class="p-3 text-slate-400 hover:text-white transition-colors" title="Local Files">
-            <i data-lucide="folder"></i>
-        </button>
-        <div class="mt-auto">
-            <button class="p-3 text-slate-400 hover:text-white transition-colors" title="Settings">
-                <i data-lucide="settings"></i>
-            </button>
-        </div>
-    </nav>
-
-    <!-- 2. History Sidebar -->
-    <aside class="w-64 h-full bg-slate-100 border-r border-slate-200 flex flex-col">
-        <div class="p-4 border-b border-slate-200 flex justify-between items-center">
-            <h2 class="font-semibold text-slate-700 text-sm tracking-wider uppercase">Recent Chats</h2>
-            <button class="text-sage-600 hover:text-sage-700">
-                <i data-lucide="plus-circle" class="w-5 h-5"></i>
-            </button>
-        </div>
-        <div class="flex-1 overflow-y-auto p-3 flex flex-col gap-2 chat-scroll">
-            <div class="p-3 rounded-lg bg-white shadow-sm border border-slate-200 text-sm font-medium text-slate-700 cursor-pointer hover:bg-slate-50 transition-colors">
-                Current Session
-            </div>
-        </div>
-    </aside>
-
-    <!-- 3. Main Chat Area -->
-    <main class="flex-1 h-full flex flex-col relative bg-white overflow-hidden">
-        <!-- Header -->
-        <header class="h-14 border-b border-slate-200 flex items-center px-6 bg-white z-10 shadow-sm shrink-0">
-            <h1 class="font-semibold text-slate-800">Lightweight Local Agent <span class="text-xs font-normal text-slate-400 ml-2">qwen2.5:3b</span></h1>
+<body>
+    <div class="app">
+        <header class="header">
+            <span class="header-title">Local Agent</span>
+            <span class="status-pill">
+                <span class="status-dot"></span>
+                Running locally&ensp;|&ensp;Qwen2.5 3B&ensp;|&ensp;private
+            </span>
         </header>
+        <div class="messages" id="messages"></div>
+    </div>
 
-        <!-- Messages Area -->
-        <div id="chat-messages" class="flex-1 overflow-y-auto p-6 flex flex-col gap-6 chat-scroll pb-32">
-            <!-- Initial Welcome Message -->
-            <div class="flex w-full">
-                <div class="max-w-[80%] bg-sage-500 text-white p-4 rounded-2xl rounded-tl-sm shadow-sm msg-content">
-                    <p class="leading-relaxed">Hello! I am your private local agent. I have a Python Sandbox and Web Search available. How can I help you?</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Input Area -->
-        <div class="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-white via-white to-transparent shrink-0">
-            <div class="max-w-4xl mx-auto relative glass-panel rounded-2xl shadow-lg border border-slate-200">
-                <textarea id="chat-input" rows="1" class="w-full bg-transparent p-4 pr-12 resize-none focus:outline-none rounded-2xl placeholder-slate-400 text-slate-700" placeholder="Ask anything or command a tool..."></textarea>
-                <button id="send-btn" class="absolute right-3 bottom-3 p-2 bg-sage-500 text-white rounded-xl hover:bg-sage-600 transition-colors">
-                    <i data-lucide="send" class="w-4 h-4"></i>
-                </button>
-            </div>
-        </div>
-    </main>
-
-    <!-- 4. Artifact & Verification Drawer (Right) -->
-    <aside id="artifact-drawer" class="w-[400px] h-full bg-slate-50 border-l border-slate-200 flex flex-col shadow-[-4px_0_24px_-10px_rgba(0,0,0,0.1)] transition-transform duration-300 transform translate-x-full absolute right-0 z-30">
-        <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-white">
-            <h2 class="font-semibold text-slate-800 flex items-center gap-2">
-                <i data-lucide="cpu" class="w-5 h-5 text-sage-600"></i> Tool Execution
-            </h2>
-            <button id="close-drawer" class="text-slate-400 hover:text-slate-600">
-                <i data-lucide="x" class="w-5 h-5"></i>
+    <div class="input-area">
+        <div class="input-wrap">
+            <textarea id="input" rows="1" placeholder="Message your local agent..." autocomplete="off"></textarea>
+            <button class="send-btn" id="send-btn" title="Send">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="18 15 12 9 6 15"></polyline>
+                </svg>
             </button>
         </div>
-        
-        <div class="flex-1 overflow-y-auto p-4 chat-scroll">
-            
-            <!-- Verification Card -->
-            <div id="drawer-verification" class="mb-6 p-4 rounded-xl border hidden bg-white shadow-sm">
-                <div class="flex items-start gap-3">
-                    <div id="drawer-v-icon" class="p-1 rounded-full bg-green-100 text-green-600 mt-0.5">
-                        <i data-lucide="check" class="w-4 h-4"></i>
-                    </div>
-                    <div>
-                        <h3 id="drawer-v-title" class="font-bold text-sm text-slate-800">Verification Success</h3>
-                        <p id="drawer-v-reason" class="text-xs text-slate-500 mt-1">Reason goes here</p>
-                    </div>
-                </div>
+    </div>
+
+    <script>
+    const messagesEl = document.getElementById('messages');
+    const inputEl    = document.getElementById('input');
+    const sendBtn    = document.getElementById('send-btn');
+    let busy = false;
+
+    inputEl.addEventListener('input', () => {
+        inputEl.style.height = 'auto';
+        inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
+    });
+    inputEl.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+    });
+    sendBtn.addEventListener('click', send);
+
+    function scrollBottom() {
+        requestAnimationFrame(() => messagesEl.scrollTop = messagesEl.scrollHeight);
+    }
+    function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function escAttr(s) { return s.replace(/"/g,'&quot;'); }
+
+    /* ── Minimal markdown ──────────────────────────────── */
+    function md(text) {
+        if (!text) return '';
+        let h = esc(text)
+            .replace(/```(\w*)\n([\s\S]*?)```/g, (_, l, code) => `<pre><code>${code.trim()}</code></pre>`)
+            .replace(/`([^`]+)`/g, '<code>$1</code>')
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.+?)\*/g, '<em>$1</em>')
+            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+        return h.split(/\n{2,}/).map(p => {
+            p = p.trim();
+            if (!p || p.startsWith('<pre>')) return p;
+            return `<p>${p.replace(/\n/g, '<br>')}</p>`;
+        }).join('');
+    }
+
+    /* ── Add user message ──────────────────────────────── */
+    function addUser(text) {
+        const d = document.createElement('div');
+        d.className = 'msg msg-user';
+        d.innerHTML = `<div class="bubble">${esc(text)}</div>`;
+        messagesEl.appendChild(d);
+        scrollBottom();
+    }
+
+    /* ── Add thinking row ──────────────────────────────── */
+    function addThinking() {
+        const d = document.createElement('div');
+        d.className = 'msg msg-agent';
+        d.innerHTML = `<div class="thinking">Thinking...</div>`;
+        messagesEl.appendChild(d);
+        scrollBottom();
+        return d;
+    }
+
+    /* ── Badge HTML ─────────────────────────────────────── */
+    function badgeFor(skill) {
+        const m = {
+            none:   { cls: 'badge-direct', label: 'Direct answer' },
+            python: { cls: 'badge-code',   label: 'Code sandbox' },
+            search: { cls: 'badge-search', label: 'Web search' },
+        };
+        const b = m[skill] || m.none;
+        return `<span class="badge ${b.cls}">${b.label}</span>`;
+    }
+
+    /* ── Collapsible toggle ────────────────────────────── */
+    window.toggle = function(id, el) {
+        const content = document.getElementById(id);
+        content.classList.toggle('open');
+        el.classList.toggle('open');
+    };
+
+    /* ── Build code expand section ─────────────────────── */
+    function codeExpandHtml(input, output) {
+        const id = 'exp_' + Date.now();
+        const count = (output || '').split('\n').filter(l => l.trim()).length;
+        return `
+            <div class="expand-trigger" onclick="toggle('${id}', this)">
+                Show code and output <span class="chevron">›</span>
             </div>
+            <div class="expand-content" id="${id}">
+                <div class="expand-label">Generated code</div>
+                <pre>${esc(input || '')}</pre>
+                <div class="expand-label">Output</div>
+                <pre>${esc(output || '(no output)')}</pre>
+            </div>`;
+    }
 
-            <!-- Telemetry Card -->
-            <div id="drawer-telemetry" class="mb-6 p-3 rounded-xl border border-slate-200 bg-white hidden shadow-sm">
-                 <h3 class="font-semibold text-xs text-slate-500 uppercase mb-2">Metrics</h3>
-                 <div class="grid grid-cols-2 gap-2 text-sm text-slate-700">
-                     <div class="bg-slate-50 p-2 rounded">
-                         <div class="text-xs text-slate-400">Router Latency</div>
-                         <div id="telemetry-router-time" class="font-medium">-</div>
-                     </div>
-                     <div class="bg-slate-50 p-2 rounded">
-                         <div class="text-xs text-slate-400">Synth Latency</div>
-                         <div id="telemetry-synth-time" class="font-medium">-</div>
-                     </div>
-                 </div>
+    /* ── Build sources expand section ──────────────────── */
+    function sourcesExpandHtml(output) {
+        if (!output) return '';
+        const blocks = output.split(/(?=\[\d+\])/).filter(b => b.trim());
+        if (!blocks.length) return '';
+        const id = 'src_' + Date.now();
+        let items = '';
+        blocks.forEach(block => {
+            const titleMatch = block.match(/^\[(\d+)\]\s*(.+)/);
+            const urlMatch   = block.match(/Source:\s*(https?:\/\/\S+)/);
+            if (titleMatch) {
+                const idx   = titleMatch[1];
+                const title = titleMatch[2].trim();
+                const url   = urlMatch ? urlMatch[1] : '#';
+                items += `<a class="source-item" href="${escAttr(url)}" target="_blank" rel="noopener">
+                    <span class="source-idx">${idx}</span>
+                    <span class="source-text">
+                        <span class="source-title">${esc(title)}</span>
+                        <span class="source-url">${esc(url)}</span>
+                    </span>
+                </a>`;
+            }
+        });
+        return `
+            <div class="expand-trigger" onclick="toggle('${id}', this)">
+                Sources (${blocks.length}) <span class="chevron">›</span>
             </div>
+            <div class="expand-content" id="${id}">
+                ${items}
+            </div>`;
+    }
 
-            <!-- Input/Output Card -->
-            <div id="drawer-tool-trace" class="hidden">
-                <h3 class="font-semibold text-xs text-slate-500 uppercase mb-2">Skill: <span id="drawer-skill-name" class="text-sage-600 font-bold">Python</span></h3>
-                
-                <div class="bg-slate-900 rounded-xl overflow-hidden shadow-sm mb-4">
-                    <div class="px-3 py-1.5 bg-slate-800 text-xs text-slate-400 font-mono flex justify-between">
-                        <span>Input</span>
-                    </div>
-                    <div class="p-3 overflow-x-auto">
-                        <pre id="drawer-skill-input" class="text-xs font-mono text-green-400"></pre>
-                    </div>
-                </div>
+    /* ── Build full agent message ──────────────────────── */
+    function addAgent(data) {
+        const d = document.createElement('div');
+        d.className = 'msg msg-agent';
 
-                <div class="bg-slate-100 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
-                    <div class="px-3 py-1.5 bg-slate-200 text-xs text-slate-500 font-mono font-medium">Output</div>
-                    <div class="p-3 overflow-x-auto">
-                        <pre id="drawer-skill-output" class="text-xs font-mono text-slate-700"></pre>
-                    </div>
-                </div>
-            </div>
+        let extra = '';
+        if (data.chosen_skill === 'python' && (data.skill_input || data.skill_output)) {
+            extra = codeExpandHtml(data.skill_input, data.skill_output);
+        } else if (data.chosen_skill === 'search' && data.skill_output) {
+            extra = sourcesExpandHtml(data.skill_output);
+        }
 
-        </div>
-    </aside>
+        d.innerHTML = `
+            ${badgeFor(data.chosen_skill)}
+            <div class="agent-bubble">
+                ${md(data.final_answer)}
+                ${extra}
+            </div>`;
+        messagesEl.appendChild(d);
+        scrollBottom();
+    }
 
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="app.js"></script>
+    /* ── Error message ─────────────────────────────────── */
+    function addError(text) {
+        const d = document.createElement('div');
+        d.className = 'msg msg-agent';
+        d.innerHTML = `<div class="error-msg">⚠️ ${esc(text)}</div>`;
+        messagesEl.appendChild(d);
+        scrollBottom();
+    }
+
+    /* ── Send ──────────────────────────────────────────── */
+    async function send() {
+        const query = inputEl.value.trim();
+        if (!query || busy) return;
+        busy = true;
+        sendBtn.disabled = true;
+        inputEl.value = '';
+        inputEl.style.height = 'auto';
+
+        addUser(query);
+        const thinking = addThinking();
+
+        try {
+            const res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query })
+            });
+            const data = await res.json();
+            thinking.remove();
+
+            if (data.error) {
+                addError(data.error);
+            } else {
+                addAgent(data);
+            }
+        } catch (err) {
+            thinking.remove();
+            addError('Could not reach the server. Is it running?\n' + err.message);
+        } finally {
+            busy = false;
+            sendBtn.disabled = false;
+            inputEl.focus();
+        }
+    }
+    </script>
 </body>
 </html>

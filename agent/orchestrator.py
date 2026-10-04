@@ -19,11 +19,25 @@ from pathlib import Path
 
 from . import config
 from . import llm
-from .registry import SKILL_REGISTRY, get_skill_runner, get_skills_prompt_description
+from .registry import (
+    SKILL_REGISTRY,
+    get_skill_runner,
+    get_skills_prompt_description,
+    get_skills_options,
+    get_skills_few_shot_examples,
+    get_skills_rules,
+)
 from .verification import verify_result
 
 
-ROUTER_SYSTEM_PROMPT = """You are a smart decision-making router for an AI agent.
+def build_router_prompt() -> str:
+    """Build the system prompt dynamically from currently registered skills."""
+    skills_description = get_skills_prompt_description()
+    skills_options = get_skills_options()
+    few_shot_examples = get_skills_few_shot_examples()
+    skills_rules = get_skills_rules()
+
+    return f"""You are a smart decision-making router for an AI agent.
 Your job is to examine the user query and decide if an external tool is required, or if you can answer directly.
 
 Available skills:
@@ -32,38 +46,21 @@ Available skills:
 
 CRITICAL INSTRUCTION:
 Your response MUST start with a line in this format:
-SKILL: <python|search|none>
+SKILL: <{skills_options}>
 
 Then, starting on the NEXT line, provide the input for the skill. Do not write anything else before the SKILL line.
 
 Examples:
-User: What is 45 factorial?
-SKILL: python
-import math
-print(math.factorial(45))
-
-User: Who won the latest football world cup?
-SKILL: search
-latest football world cup winner
-
-User: Hi, who are you?
+{few_shot_examples}User: Hi, who are you?
 SKILL: none
 Hello! I am your AI assistant. How can I help you today?
 
 Rules:
 1. The first line must be exactly SKILL: <name>.
-2. Everything after the first line is treated as the input.
-3. For 'python', the input must be executable Python code that prints the result.
-4. For 'search', the input must be a search query.
-5. For 'none', the input must be a helpful direct answer.
+2. Everything after the first line is treated as the input for that skill.
+{skills_rules}
+- For 'none', the input must be a helpful direct answer.
 """
-
-
-def build_router_prompt() -> str:
-    """Build the system prompt containing currently registered skills."""
-    return ROUTER_SYSTEM_PROMPT.format(
-        skills_description=get_skills_prompt_description()
-    )
 
 
 def parse_router_response(raw_reply: str) -> tuple[str, str]:
@@ -186,17 +183,19 @@ def run_pipeline(user_query: str) -> dict:
             print(f"[Skill Output]\n{skill_output}")
             
             # ── Self-Retry Loop (CRITIC) ───────────────────────
-            if chosen_skill == "python" and skill_output and ("[Sandbox Error]" in skill_output or "[STDERR]" in skill_output):
-                print(f"[Agent] Detected error in Python execution. Retrying once...")
+            skill_meta = SKILL_REGISTRY.get(chosen_skill, {})
+            retry_indicators = skill_meta.get("retry_error_indicators", [])
+            if skill_meta.get("can_retry") and skill_output and any(ind in skill_output for ind in retry_indicators):
+                print(f"[Agent] Detected error in {chosen_skill} execution. Retrying once...")
                 retry_messages = router_messages + [
                     {"role": "assistant", "content": router_raw},
-                    {"role": "user", "content": f"The Python code failed with this error:\n{skill_output}\n\nPlease fix the code and try again. Output MUST use the exact same SKILL format."}
+                    {"role": "user", "content": f"The {chosen_skill} execution failed with this error:\n{skill_output}\n\nPlease fix the input and try again. Output MUST use the exact same SKILL format."}
                 ]
                 try:
                     retry_raw, retry_telemetry = llm.chat(retry_messages, temperature=0.2)
                     _, retry_input = parse_router_response(retry_raw)
                     if retry_input:
-                        print(f"[Agent] Retrying with fixed code:\n{retry_input}")
+                        print(f"[Agent] Retrying with fixed input:\n{retry_input}")
                         skill_input = retry_input
                         skill_output = runner(skill_input)
                         print(f"[Skill Output (Retry)]\n{skill_output}")
