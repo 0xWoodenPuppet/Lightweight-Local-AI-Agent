@@ -1,6 +1,7 @@
 import json
 import sys
 import os
+import re
 from pathlib import Path
 
 # Add parent directory to sys.path so we can import from the main project
@@ -82,25 +83,29 @@ def evaluate():
         verification = scaffolded_result["verification"]
         
         # 3. Assess Correctness
-        # Robust normalization for punctuation, unicode dashes, and date ranges
+        # Robust normalization for punctuation, unicode dashes, number formats, and date ranges
         def is_correct(answer, truths):
             if not truths:
                 return True # For 'none' skill questions without specific GT
             ans_clean = str(answer).lower().replace("–", "-").replace("—", "-")
+            # Strip commas between digits (e.g. "276,000" -> "276000") for numerical matching
+            ans_no_commas = re.sub(r'(?<=\d),(?=\d)', '', ans_clean)
             for t in truths:
                 t_str = str(t).strip().rstrip(".,;:")
                 t_clean = t_str.lower().replace("–", "-").replace("—", "-")
-                if t_clean in ans_clean:
+                t_no_commas = re.sub(r'(?<=\d),(?=\d)', '', t_clean)
+
+                if t_clean in ans_clean or t_no_commas in ans_no_commas:
                     return True
                 # If ground truth is a date or number range (e.g. "1568-1609"), check individual anchor years
                 if "-" in t_clean:
                     parts = [p.strip() for p in t_clean.split("-") if len(p.strip()) >= 4]
                     if parts and any(part in ans_clean for part in parts):
                         return True
-                # Check float/integer equivalence (e.g. 12 vs 12.0)
+                # Check float/integer equivalence and currency (e.g. $12 vs 12 vs 12.0)
                 try:
-                    num = float(t_clean)
-                    if num.is_integer() and f"{int(num)}" in ans_clean:
+                    num = float(t_no_commas.replace("$", "").strip())
+                    if num.is_integer() and (f"{int(num)}" in ans_no_commas or f"{int(num)}.0" in ans_no_commas):
                         return True
                 except ValueError:
                     pass
