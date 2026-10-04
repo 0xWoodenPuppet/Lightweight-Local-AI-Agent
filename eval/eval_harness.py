@@ -9,11 +9,16 @@ sys.path.append(str(Path(__file__).parent.parent))
 from agent.orchestrator import run_pipeline
 from agent import llm
 import argparse
+import time
+import gc
 
 def evaluate():
     parser = argparse.ArgumentParser(description="Run evaluation harness on dataset")
     parser.add_argument("--limit", type=int, default=None, help="Limit number of queries to evaluate")
     parser.add_argument("--resume", action="store_true", help="Resume from previous results.json")
+    parser.add_argument("--cooldown-interval", type=int, default=25, help="Number of queries between cooldowns")
+    parser.add_argument("--cooldown-seconds", type=int, default=15, help="Duration of thermal cooldown pause in seconds")
+    parser.add_argument("--breather-seconds", type=float, default=0.5, help="Short breather after each query in seconds")
     args = parser.parse_args()
 
     dataset_path = Path(__file__).parent / "dataset.json"
@@ -131,6 +136,18 @@ def evaluate():
         # Incrementally persist so no progress is lost
         with open(results_path, "w", encoding="utf-8") as f:
             json.dump({"metrics": metrics, "results": results}, f, indent=2, ensure_ascii=False)
+            
+        # Free tensor cache and memory buffers
+        gc.collect()
+
+        # Per-query short breather to allow sockets and GPU buffers to flush
+        if args.breather_seconds > 0:
+            time.sleep(args.breather_seconds)
+
+        # Periodic thermal & memory cooldown
+        if (i + 1) < len(dataset) and (i + 1) % args.cooldown_interval == 0:
+            print(f"\n[Thermal Cooldown] Pausing for {args.cooldown_seconds}s to let CPU/GPU cool and RAM flush ({i+1}/{len(dataset)} completed)...")
+            time.sleep(args.cooldown_seconds)
         
     print("\n================ EVALUATION SUMMARY ================")
     print(f"Total Questions: {metrics['total']}")
