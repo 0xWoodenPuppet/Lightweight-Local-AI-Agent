@@ -28,6 +28,130 @@
             --radius-sm:     10px;
         }
 
+        [data-theme="light"] {
+            --bg:            #f8fafc;
+            --bg-secondary:  #ffffff;
+            --bg-bubble:     #f1f5f9;
+            --bg-input:      #ffffff;
+            --border:        #e2e8f0;
+            --text:          #0f172a;
+            --text-dim:      #475569;
+            --text-muted:    #94a3b8;
+            --accent:        #2563eb;
+            --accent-hover:  #1d4ed8;
+            --badge-code:    #059669;
+            --badge-search:  #059669;
+            --badge-direct:  #d97706;
+            --error:         #dc2626;
+        }
+
+        [data-theme="light"] .theme-toggle-btn:hover,
+        [data-theme="light"] .memory-btn:hover,
+        [data-theme="light"] .sidebar-toggle-btn:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #0f172a;
+        }
+
+        [data-theme="light"] .new-chat-btn {
+            background: #f1f5f9;
+            border-color: #e2e8f0;
+            color: #0f172a;
+        }
+        [data-theme="light"] .new-chat-btn:hover {
+            background: #e2e8f0;
+        }
+
+        [data-theme="light"] .conv-item:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+
+        [data-theme="light"] .conv-item.active {
+            background: rgba(37, 99, 235, 0.08);
+            color: #2563eb;
+        }
+
+        [data-theme="light"] .skill-mode-select {
+            background-color: #ffffff;
+            border-color: #e2e8f0;
+            color: #334155;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        }
+        [data-theme="light"] .skill-mode-select:hover {
+            background-color: #f8fafc;
+            border-color: #cbd5e1;
+            color: #0f172a;
+        }
+
+        [data-theme="light"] .status-pill {
+            background: #ffffff;
+            border-color: #e2e8f0;
+            color: #64748b;
+        }
+
+        [data-theme="light"] .input-box {
+            background: #ffffff;
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        [data-theme="light"] .agent-bubble {
+            background: #ffffff;
+            border-color: #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        [data-theme="light"] .thought-toggle {
+            background: #f1f5f9;
+            border-color: #e2e8f0;
+        }
+        [data-theme="light"] .thought-toggle:hover {
+            background: #e2e8f0;
+        }
+
+        [data-theme="light"] .thought-body {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+        }
+
+        [data-theme="light"] .code-block {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+        }
+
+        [data-theme="light"] .code-block-header {
+            background: #f1f5f9;
+            border-color: #e2e8f0;
+        }
+
+        [data-theme="light"] .source-item {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+        }
+        [data-theme="light"] .source-item:hover {
+            background: #f1f5f9;
+        }
+
+        [data-theme="light"] .memory-modal {
+            background: #ffffff;
+            border-color: #e2e8f0;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        [data-theme="light"] .memory-modal-body {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+        }
+
+        [data-theme="light"] .input-area {
+            background: linear-gradient(to top, var(--bg) 70%, transparent);
+        }
+
+        [data-theme="light"] .messages::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+        }
+
         html, body {
             height: 100%;
             font-family: 'Inter', -apple-system, sans-serif;
@@ -260,6 +384,26 @@
         }
         .memory-btn.has-memory .memory-dot {
             display: inline-block;
+        }
+
+        /* ── Theme Toggle Button ─────────────────────────── */
+        .theme-toggle-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 999px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .theme-toggle-btn:hover {
+            color: var(--text);
+            border-color: rgba(255, 255, 255, 0.2);
+            background: var(--bg-bubble);
         }
 
         /* ── Skill Mode Selector ─────────────────────────── */
@@ -831,6 +975,22 @@
                             <span>Memory</span>
                             <span class="memory-dot" id="memory-dot"></span>
                         </button>
+                        <button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle light/dark theme">
+                            <svg id="theme-icon-sun" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="5"></circle>
+                                <line x1="12" y1="1" x2="12" y2="3"></line>
+                                <line x1="12" y1="21" x2="12" y2="23"></line>
+                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                <line x1="1" y1="12" x2="3" y2="12"></line>
+                                <line x1="21" y1="12" x2="23" y2="12"></line>
+                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                            </svg>
+                            <svg id="theme-icon-moon" style="display:none;" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg>
+                        </button>
                         <span class="status-pill">
                             <span class="status-dot"></span>
                             Running locally&ensp;|&ensp;Qwen2.5 3B&ensp;|&ensp;private
@@ -1316,6 +1476,30 @@
         };
         inputEl.placeholder = placeholders[val] || placeholders.auto;
     }
+
+    /* ── Theme Toggle ─────────────────────────────────── */
+    window.setTheme = function(theme) {
+        const sun = document.getElementById('theme-icon-sun');
+        const moon = document.getElementById('theme-icon-moon');
+        if (theme === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+            if (sun) sun.style.display = 'none';
+            if (moon) moon.style.display = 'block';
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+            if (sun) sun.style.display = 'block';
+            if (moon) moon.style.display = 'none';
+        }
+        localStorage.setItem('agent_theme', theme);
+    };
+
+    window.toggleTheme = function() {
+        const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+        window.setTheme(current === 'light' ? 'dark' : 'light');
+    };
+
+    const savedTheme = localStorage.getItem('agent_theme') || 'dark';
+    window.setTheme(savedTheme);
 
     // Initial load of history, memory, and skill mode
     loadConversations();
